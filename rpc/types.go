@@ -29,7 +29,8 @@ import (
 )
 
 type Context struct {
-	Slot uint64 `json:"slot"`
+	Slot       uint64  `json:"slot"`
+	ApiVersion *string `json:"apiVersion,omitempty"`
 }
 
 type RPCContext struct {
@@ -258,6 +259,9 @@ type TransactionSignature struct {
 	BlockTime *solana.UnixTimeSeconds `json:"blockTime,omitempty"`
 
 	ConfirmationStatus ConfirmationStatusType `json:"confirmationStatus,omitempty"`
+
+	// The transaction's index within the block.
+	TransactionIndex *uint32 `json:"transactionIndex,omitempty"`
 }
 
 type GetAccountInfoResult struct {
@@ -406,9 +410,20 @@ type GetProgramAccountsOpts struct {
 	// Filter results using various filter objects;
 	// account must meet all filter criteria to be included in results.
 	Filters []RPCFilter `json:"filters,omitempty"`
+
+	// Wrap the result in an RpcResponse JSON object with context.
+	WithContext *bool `json:"withContext,omitempty"`
+
+	// Sort the results (useful for deterministic pagination).
+	SortResults *bool `json:"sortResults,omitempty"`
 }
 
 type GetProgramAccountsResult []*KeyedAccount
+
+type GetProgramAccountsWithContextResult struct {
+	RPCContext
+	Value GetProgramAccountsResult `json:"value"`
+}
 
 type KeyedAccount struct {
 	Pubkey  solana.PublicKey `json:"pubkey"`
