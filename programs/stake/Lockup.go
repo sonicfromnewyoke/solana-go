@@ -17,6 +17,7 @@ package stake
 import (
 	"errors"
 
+	bin "github.com/gagliardetto/solana-go/binary"
 	ag_solanago "github.com/gagliardetto/solana-go"
 )
 
@@ -27,6 +28,50 @@ type Lockup struct {
 	Epoch *uint64
 	// Custodian signature on a transaction exempts the operation from lockup constraints
 	Custodian *ag_solanago.PublicKey
+}
+
+func (lockup *Lockup) UnmarshalWithDecoder(dec *bin.Decoder) error {
+	{
+		err := dec.Decode(&lockup.UnixTimestamp)
+		if err != nil {
+			return err
+		}
+	}
+	{
+		err := dec.Decode(&lockup.Epoch)
+		if err != nil {
+			return err
+		}
+	}
+	{
+		err := dec.Decode(&lockup.Custodian)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (lockup *Lockup) MarshalWithEncoder(encoder *bin.Encoder) error {
+	{
+		err := encoder.Encode(*lockup.UnixTimestamp)
+		if err != nil {
+			return err
+		}
+	}
+	{
+		err := encoder.Encode(*lockup.Epoch)
+		if err != nil {
+			return err
+		}
+	}
+	{
+		err := encoder.Encode(*lockup.Custodian)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (lockup *Lockup) Validate() error {

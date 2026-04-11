@@ -18,8 +18,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gagliardetto/solana-go"
 	bin "github.com/gagliardetto/solana-go/binary"
+	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/text/format"
 	"github.com/gagliardetto/treeout"
 )
@@ -79,6 +79,26 @@ func (inst *MoveStake) GetStakeAuthority() *solana.AccountMeta { return inst.Acc
 func (inst *MoveStake) SetLamports(lamports uint64) *MoveStake {
 	inst.Lamports = &lamports
 	return inst
+}
+
+func (inst *MoveStake) UnmarshalWithDecoder(dec *bin.Decoder) error {
+	{
+		err := dec.Decode(&inst.Lamports)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (inst *MoveStake) MarshalWithEncoder(encoder *bin.Encoder) error {
+	{
+		err := encoder.Encode(*inst.Lamports)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (inst MoveStake) Build() *Instruction {

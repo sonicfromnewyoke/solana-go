@@ -41,6 +41,28 @@ type Withdraw struct {
 	solana.AccountMetaSlice `bin:"-" borsh_skip:"true"`
 }
 
+func (v *Withdraw) UnmarshalWithDecoder(dec *bin.Decoder) error {
+	// Deserialize `Lamports` param:
+	{
+		err := dec.Decode(&v.Lamports)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (inst *Withdraw) MarshalWithEncoder(encoder *bin.Encoder) error {
+	// Serialize `Lamports` param:
+	{
+		err := encoder.Encode(*inst.Lamports)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (inst *Withdraw) Validate() error {
 	// Check whether all (required) parameters are set:
 	{

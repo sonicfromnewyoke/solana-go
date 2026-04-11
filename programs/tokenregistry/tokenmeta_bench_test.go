@@ -68,6 +68,27 @@ func BenchmarkDecode_TokenMeta(b *testing.B) {
 	}
 }
 
+// BenchmarkDecode_TokenMeta_UnmarshalBin exercises the pooled
+// UnmarshalBin convenience helper, which draws a Decoder from a
+// sync.Pool, resets it with the input bytes, decodes, and returns it
+// for reuse. Compare to BenchmarkDecode_TokenMeta which constructs a
+// fresh Decoder every iteration.
+func BenchmarkDecode_TokenMeta_UnmarshalBin(b *testing.B) {
+	tm := makeBenchTokenMeta()
+	data, err := bin.MarshalBin(&tm)
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var out TokenMeta
+		if err := bin.UnmarshalBin(&out, data); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
 // Reused-buffer encoder variant — writes into a single bytes.Buffer that's
 // reset between iterations, isolating the reflect-walk cost from
 // MarshalBin's allocation of a fresh buffer per call.

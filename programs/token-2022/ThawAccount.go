@@ -18,8 +18,8 @@ import (
 	"errors"
 	"fmt"
 
-	ag_solanago "github.com/gagliardetto/solana-go"
 	ag_binary "github.com/gagliardetto/solana-go/binary"
+	ag_solanago "github.com/gagliardetto/solana-go"
 	ag_format "github.com/gagliardetto/solana-go/text/format"
 	ag_treeout "github.com/gagliardetto/treeout"
 )
@@ -174,6 +174,13 @@ func (inst *ThawAccount) EncodeToTree(parent ag_treeout.Branches) {
 					})
 				})
 		})
+}
+
+func (obj ThawAccount) MarshalWithEncoder(encoder *ag_binary.Encoder) (err error) {
+	return nil
+}
+func (obj *ThawAccount) UnmarshalWithDecoder(decoder *ag_binary.Decoder) (err error) {
+	return nil
 }
 
 // NewThawAccountInstruction declares a new ThawAccount instruction with the provided parameters and accounts.

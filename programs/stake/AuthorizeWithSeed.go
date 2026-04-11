@@ -18,8 +18,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gagliardetto/solana-go"
 	bin "github.com/gagliardetto/solana-go/binary"
+	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/text/format"
 	"github.com/gagliardetto/treeout"
 )
@@ -127,6 +127,26 @@ func (inst *AuthorizeWithSeed) SetAuthoritySeed(seed string) *AuthorizeWithSeed 
 func (inst *AuthorizeWithSeed) SetAuthorityOwner(owner solana.PublicKey) *AuthorizeWithSeed {
 	inst.Args.AuthorityOwner = &owner
 	return inst
+}
+
+func (inst *AuthorizeWithSeed) UnmarshalWithDecoder(dec *bin.Decoder) error {
+	{
+		err := dec.Decode(&inst.Args)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (inst *AuthorizeWithSeed) MarshalWithEncoder(encoder *bin.Encoder) error {
+	{
+		err := encoder.Encode(*inst.Args)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (inst AuthorizeWithSeed) Build() *Instruction {

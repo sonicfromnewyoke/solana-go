@@ -18,9 +18,104 @@
 package bin
 
 import (
-	"bytes"
 	"fmt"
+	"sync"
 )
+
+// marshalBufInitialCap is the initial capacity allocated for a pooled
+// Encoder's internal buffer. Chosen to cover the typical Solana
+// instruction payload size (~256 bytes fits the vast majority of
+// variant-wrapped instructions and most small state structs) without
+// requiring a grow step on the hot path. Larger payloads still grow
+// via append.
+const marshalBufInitialCap = 256
+
+// Per-encoding Encoder pools. Pooled encoders are always in buffered
+// mode (output == nil, writes append to e.buf). Marshal helpers Get a
+// pooled encoder, encode into it, copy the result out (the pooled
+// buffer can be reused by the next caller), Reset, and Put back.
+var (
+	binEncoderPool = sync.Pool{
+		New: func() any {
+			return &Encoder{
+				encoding: EncodingBin,
+				buf:      make([]byte, 0, marshalBufInitialCap),
+			}
+		},
+	}
+	borshEncoderPool = sync.Pool{
+		New: func() any {
+			return &Encoder{
+				encoding: EncodingBorsh,
+				buf:      make([]byte, 0, marshalBufInitialCap),
+			}
+		},
+	}
+	compactU16EncoderPool = sync.Pool{
+		New: func() any {
+			return &Encoder{
+				encoding: EncodingCompactU16,
+				buf:      make([]byte, 0, marshalBufInitialCap),
+			}
+		},
+	}
+
+	// Per-encoding Decoder pools. Pooled decoders have their data/pos
+	// reset between uses via Decoder.Reset. The encoding field is set
+	// at pool-New time and preserved by Reset.
+	binDecoderPool = sync.Pool{
+		New: func() any {
+			return &Decoder{encoding: EncodingBin}
+		},
+	}
+	borshDecoderPool = sync.Pool{
+		New: func() any {
+			return &Decoder{encoding: EncodingBorsh}
+		},
+	}
+	compactU16DecoderPool = sync.Pool{
+		New: func() any {
+			return &Decoder{encoding: EncodingCompactU16}
+		},
+	}
+)
+
+// pooledMarshal runs enc.Encode(v) on a pooled encoder, copies the
+// resulting bytes out so the pooled buffer can be reused safely, and
+// returns the encoder to the pool. It is the shared implementation
+// behind MarshalBin / MarshalBorsh / MarshalCompactU16.
+func pooledMarshal(pool *sync.Pool, v any) ([]byte, error) {
+	enc := pool.Get().(*Encoder)
+	err := enc.Encode(v)
+	if err != nil {
+		enc.Reset()
+		pool.Put(enc)
+		return nil, err
+	}
+	// Copy the bytes out: the pooled encoder's underlying slice will
+	// be reused by future callers, so returning enc.buf directly would
+	// let the next Marshal call silently stomp on the caller's result.
+	out := make([]byte, len(enc.buf))
+	copy(out, enc.buf)
+	enc.Reset()
+	pool.Put(enc)
+	return out, nil
+}
+
+// pooledUnmarshal runs dec.Decode(v) on a pooled decoder over the
+// provided bytes, then returns the decoder to the pool. Shared
+// implementation behind UnmarshalBin / UnmarshalBorsh /
+// UnmarshalCompactU16.
+func pooledUnmarshal(pool *sync.Pool, v any, b []byte) error {
+	dec := pool.Get().(*Decoder)
+	dec.Reset(b)
+	err := dec.Decode(v)
+	// Clear the data reference before returning to pool so we don't
+	// pin the caller's input buffer in the pool.
+	dec.Reset(nil)
+	pool.Put(dec)
+	return err
+}
 
 type BinaryMarshaler interface {
 	MarshalWithEncoder(encoder *Encoder) error
@@ -36,42 +131,27 @@ type EncoderDecoder interface {
 }
 
 func MarshalBin(v any) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	if err := NewBinEncoder(buf).Encode(v); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return pooledMarshal(&binEncoderPool, v)
 }
 
 func MarshalBorsh(v any) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	if err := NewBorshEncoder(buf).Encode(v); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return pooledMarshal(&borshEncoderPool, v)
 }
 
 func MarshalCompactU16(v any) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	if err := NewCompactU16Encoder(buf).Encode(v); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return pooledMarshal(&compactU16EncoderPool, v)
 }
 
 func UnmarshalBin(v any, b []byte) error {
-	decoder := NewBinDecoder(b)
-	return decoder.Decode(v)
+	return pooledUnmarshal(&binDecoderPool, v, b)
 }
 
 func UnmarshalBorsh(v any, b []byte) error {
-	decoder := NewBorshDecoder(b)
-	return decoder.Decode(v)
+	return pooledUnmarshal(&borshDecoderPool, v, b)
 }
 
 func UnmarshalCompactU16(v any, b []byte) error {
-	decoder := NewCompactU16Decoder(b)
-	return decoder.Decode(v)
+	return pooledUnmarshal(&compactU16DecoderPool, v, b)
 }
 
 type byteCounter struct {

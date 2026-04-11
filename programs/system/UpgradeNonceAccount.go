@@ -18,8 +18,8 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	ag_solanago "github.com/gagliardetto/solana-go"
 	ag_binary "github.com/gagliardetto/solana-go/binary"
+	ag_solanago "github.com/gagliardetto/solana-go"
 	ag_format "github.com/gagliardetto/solana-go/text/format"
 	ag_treeout "github.com/gagliardetto/treeout"
 )
@@ -95,6 +95,14 @@ func (inst *UpgradeNonceAccount) EncodeToTree(parent ag_treeout.Branches) {
 					})
 				})
 		})
+}
+
+func (inst UpgradeNonceAccount) MarshalWithEncoder(encoder *ag_binary.Encoder) error {
+	return nil
+}
+
+func (inst *UpgradeNonceAccount) UnmarshalWithDecoder(decoder *ag_binary.Decoder) error {
+	return nil
 }
 
 // NewUpgradeNonceAccountInstruction declares a new UpgradeNonceAccount instruction with the provided parameters and accounts.

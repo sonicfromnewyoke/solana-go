@@ -18,8 +18,8 @@ import (
 	"errors"
 	"fmt"
 
-	solana "github.com/gagliardetto/solana-go"
 	bin "github.com/gagliardetto/solana-go/binary"
+	solana "github.com/gagliardetto/solana-go"
 	format "github.com/gagliardetto/solana-go/text/format"
 	treeout "github.com/gagliardetto/treeout"
 )
@@ -199,6 +199,14 @@ func (inst *Create) EncodeToTree(parent treeout.Branches) {
 					})
 				})
 		})
+}
+
+func (inst Create) MarshalWithEncoder(encoder *bin.Encoder) error {
+	return nil
+}
+
+func (inst *Create) UnmarshalWithDecoder(decoder *bin.Decoder) error {
+	return nil
 }
 
 func NewCreateInstruction(

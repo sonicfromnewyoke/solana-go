@@ -15,11 +15,12 @@
 package stake
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
 
-	"github.com/gagliardetto/solana-go"
 	bin "github.com/gagliardetto/solana-go/binary"
+	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/text/format"
 	"github.com/gagliardetto/treeout"
 )
@@ -102,6 +103,40 @@ func (inst *Authorize) SetNewAuthorized(newAuthorized solana.PublicKey) *Authori
 func (inst *Authorize) SetStakeAuthorize(stakeAuthorize StakeAuthorize) *Authorize {
 	inst.StakeAuthorize = &stakeAuthorize
 	return inst
+}
+
+func (inst *Authorize) UnmarshalWithDecoder(dec *bin.Decoder) error {
+	{
+		err := dec.Decode(&inst.NewAuthorized)
+		if err != nil {
+			return err
+		}
+	}
+	{
+		val, err := dec.ReadUint32(binary.LittleEndian)
+		if err != nil {
+			return err
+		}
+		sa := StakeAuthorize(val)
+		inst.StakeAuthorize = &sa
+	}
+	return nil
+}
+
+func (inst *Authorize) MarshalWithEncoder(encoder *bin.Encoder) error {
+	{
+		err := encoder.Encode(*inst.NewAuthorized)
+		if err != nil {
+			return err
+		}
+	}
+	{
+		err := encoder.WriteUint32(uint32(*inst.StakeAuthorize), binary.LittleEndian)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (inst Authorize) Build() *Instruction {
