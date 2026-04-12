@@ -205,7 +205,7 @@ func (inst *CreateAccountWithSeed) EncodeToTree(parent ag_treeout.Branches) {
 func (inst CreateAccountWithSeed) MarshalWithEncoder(encoder *ag_binary.Encoder) error {
 	// Serialize `Base` param:
 	{
-		err := encoder.Encode(*inst.Base)
+		err := encoder.WriteBytes(inst.Base[:], false)
 		if err != nil {
 			return err
 		}
@@ -233,7 +233,7 @@ func (inst CreateAccountWithSeed) MarshalWithEncoder(encoder *ag_binary.Encoder)
 	}
 	// Serialize `Owner` param:
 	{
-		err := encoder.Encode(*inst.Owner)
+		err := encoder.WriteBytes(inst.Owner[:], false)
 		if err != nil {
 			return err
 		}

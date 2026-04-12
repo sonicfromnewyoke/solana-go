@@ -157,7 +157,7 @@ func (inst *AssignWithSeed) EncodeToTree(parent ag_treeout.Branches) {
 func (inst AssignWithSeed) MarshalWithEncoder(encoder *ag_binary.Encoder) error {
 	// Serialize `Base` param:
 	{
-		err := encoder.Encode(*inst.Base)
+		err := encoder.WriteBytes(inst.Base[:], false)
 		if err != nil {
 			return err
 		}
@@ -171,7 +171,7 @@ func (inst AssignWithSeed) MarshalWithEncoder(encoder *ag_binary.Encoder) error 
 	}
 	// Serialize `Owner` param:
 	{
-		err := encoder.Encode(*inst.Owner)
+		err := encoder.WriteBytes(inst.Owner[:], false)
 		if err != nil {
 			return err
 		}

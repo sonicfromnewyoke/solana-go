@@ -171,7 +171,7 @@ func (inst CreateAccount) MarshalWithEncoder(encoder *ag_binary.Encoder) error {
 	}
 	// Serialize `Owner` param:
 	{
-		err := encoder.Encode(*inst.Owner)
+		err := encoder.WriteBytes(inst.Owner[:], false)
 		if err != nil {
 			return err
 		}

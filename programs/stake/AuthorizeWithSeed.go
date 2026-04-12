@@ -141,7 +141,7 @@ func (inst *AuthorizeWithSeed) UnmarshalWithDecoder(dec *bin.Decoder) error {
 
 func (inst *AuthorizeWithSeed) MarshalWithEncoder(encoder *bin.Encoder) error {
 	{
-		err := encoder.Encode(*inst.Args)
+		err := inst.Args.MarshalWithEncoder(encoder)
 		if err != nil {
 			return err
 		}

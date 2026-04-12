@@ -125,7 +125,7 @@ func (inst *Authorize) UnmarshalWithDecoder(dec *bin.Decoder) error {
 
 func (inst *Authorize) MarshalWithEncoder(encoder *bin.Encoder) error {
 	{
-		err := encoder.Encode(*inst.NewAuthorized)
+		err := encoder.WriteBytes(inst.NewAuthorized[:], false)
 		if err != nil {
 			return err
 		}

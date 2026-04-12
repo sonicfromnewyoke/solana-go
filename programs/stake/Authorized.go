@@ -46,13 +46,13 @@ func (auth *Authorized) UnmarshalWithDecoder(dec *bin.Decoder) error {
 
 func (auth *Authorized) MarshalWithEncoder(encoder *bin.Encoder) error {
 	{
-		err := encoder.Encode(*auth.Staker)
+		err := encoder.WriteBytes(auth.Staker[:], false)
 		if err != nil {
 			return err
 		}
 	}
 	{
-		err := encoder.Encode(*auth.Withdrawer)
+		err := encoder.WriteBytes(auth.Withdrawer[:], false)
 		if err != nil {
 			return err
 		}

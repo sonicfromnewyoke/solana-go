@@ -185,7 +185,7 @@ func (inst TransferWithSeed) MarshalWithEncoder(encoder *ag_binary.Encoder) erro
 	}
 	// Serialize `FromOwner` param:
 	{
-		err := encoder.Encode(*inst.FromOwner)
+		err := encoder.WriteBytes(inst.FromOwner[:], false)
 		if err != nil {
 			return err
 		}

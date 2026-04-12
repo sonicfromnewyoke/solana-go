@@ -149,7 +149,7 @@ func (inst *InitializeNonceAccount) EncodeToTree(parent ag_treeout.Branches) {
 func (inst InitializeNonceAccount) MarshalWithEncoder(encoder *ag_binary.Encoder) error {
 	// Serialize `Authorized` param:
 	{
-		err := encoder.Encode(*inst.Authorized)
+		err := encoder.WriteBytes(inst.Authorized[:], false)
 		if err != nil {
 			return err
 		}

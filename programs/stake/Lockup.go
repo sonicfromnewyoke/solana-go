@@ -66,7 +66,7 @@ func (lockup *Lockup) MarshalWithEncoder(encoder *bin.Encoder) error {
 		}
 	}
 	{
-		err := encoder.Encode(*lockup.Custodian)
+		err := encoder.WriteBytes(lockup.Custodian[:], false)
 		if err != nil {
 			return err
 		}

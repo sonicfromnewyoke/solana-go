@@ -105,7 +105,7 @@ func (inst *SetLockupChecked) UnmarshalWithDecoder(dec *bin.Decoder) error {
 
 func (inst *SetLockupChecked) MarshalWithEncoder(encoder *bin.Encoder) error {
 	{
-		err := encoder.Encode(*inst.LockupCheckedArgs)
+		err := inst.LockupCheckedArgs.MarshalWithEncoder(encoder)
 		if err != nil {
 			return err
 		}
