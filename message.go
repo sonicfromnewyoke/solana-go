@@ -32,9 +32,9 @@ type MessageAddressTableLookupSlice []MessageAddressTableLookup
 // NumLookups returns the number of accounts from all the lookups.
 func (lookups MessageAddressTableLookupSlice) NumLookups() int {
 	count := 0
-	for _, lookup := range lookups {
-		count += len(lookup.ReadonlyIndexes)
-		count += len(lookup.WritableIndexes)
+	for i := range lookups {
+		count += len(lookups[i].ReadonlyIndexes)
+		count += len(lookups[i].WritableIndexes)
 	}
 	return count
 }
@@ -43,8 +43,8 @@ func (lookups MessageAddressTableLookupSlice) NumLookups() int {
 // across all the lookups (all the address tables).
 func (lookups MessageAddressTableLookupSlice) NumWritableLookups() int {
 	count := 0
-	for _, lookup := range lookups {
-		count += len(lookup.WritableIndexes)
+	for i := range lookups {
+		count += len(lookups[i].WritableIndexes)
 	}
 	return count
 }
@@ -178,14 +178,14 @@ func (mx *Message) GetAddressTableLookups() MessageAddressTableLookupSlice {
 	return mx.AddressTableLookups
 }
 
-func (mx Message) NumLookups() int {
+func (mx *Message) NumLookups() int {
 	if mx.AddressTableLookups == nil {
 		return 0
 	}
 	return mx.AddressTableLookups.NumLookups()
 }
 
-func (mx Message) NumWritableLookups() int {
+func (mx *Message) NumWritableLookups() int {
 	if mx.AddressTableLookups == nil {
 		return 0
 	}
@@ -294,11 +294,18 @@ func (mx *Message) MarshalBinary() ([]byte, error) {
 }
 
 func (mx *Message) MarshalLegacy() ([]byte, error) {
-	buf := []byte{
+	// Estimate buffer size: 3 (header) + compactU16 + 32*keys + 32 (blockhash) + instructions.
+	estimatedSize := 3 + 3 + 32*len(mx.AccountKeys) + 32 + 3
+	for i := range mx.Instructions {
+		estimatedSize += 1 + 3 + len(mx.Instructions[i].Accounts) + 3 + len(mx.Instructions[i].Data)
+	}
+
+	buf := make([]byte, 0, estimatedSize)
+	buf = append(buf,
 		mx.Header.NumRequiredSignatures,
 		mx.Header.NumReadonlySignedAccounts,
 		mx.Header.NumReadonlyUnsignedAccounts,
-	}
+	)
 
 	bin.EncodeCompactU16Length(&buf, len(mx.AccountKeys))
 	for _, key := range mx.AccountKeys {
@@ -308,47 +315,20 @@ func (mx *Message) MarshalLegacy() ([]byte, error) {
 	buf = append(buf, mx.RecentBlockhash[:]...)
 
 	bin.EncodeCompactU16Length(&buf, len(mx.Instructions))
-	for _, instruction := range mx.Instructions {
-		buf = append(buf, byte(instruction.ProgramIDIndex))
-		bin.EncodeCompactU16Length(&buf, len(instruction.Accounts))
-		for _, accountIdx := range instruction.Accounts {
+	for i := range mx.Instructions {
+		buf = append(buf, byte(mx.Instructions[i].ProgramIDIndex))
+		bin.EncodeCompactU16Length(&buf, len(mx.Instructions[i].Accounts))
+		for _, accountIdx := range mx.Instructions[i].Accounts {
 			buf = append(buf, byte(accountIdx))
 		}
 
-		bin.EncodeCompactU16Length(&buf, len(instruction.Data))
-		buf = append(buf, instruction.Data...)
+		bin.EncodeCompactU16Length(&buf, len(mx.Instructions[i].Data))
+		buf = append(buf, mx.Instructions[i].Data...)
 	}
 	return buf, nil
 }
 
 func (mx *Message) MarshalV0() ([]byte, error) {
-	buf := []byte{
-		mx.Header.NumRequiredSignatures,
-		mx.Header.NumReadonlySignedAccounts,
-		mx.Header.NumReadonlyUnsignedAccounts,
-	}
-	{
-		// Encode only the keys that are not in the address table lookups.
-		staticAccountKeys := mx.getStaticKeys()
-		bin.EncodeCompactU16Length(&buf, len(staticAccountKeys))
-		for _, key := range staticAccountKeys {
-			buf = append(buf, key[:]...)
-		}
-
-		buf = append(buf, mx.RecentBlockhash[:]...)
-
-		bin.EncodeCompactU16Length(&buf, len(mx.Instructions))
-		for _, instruction := range mx.Instructions {
-			buf = append(buf, byte(instruction.ProgramIDIndex))
-			bin.EncodeCompactU16Length(&buf, len(instruction.Accounts))
-			for _, accountIdx := range instruction.Accounts {
-				buf = append(buf, byte(accountIdx))
-			}
-
-			bin.EncodeCompactU16Length(&buf, len(instruction.Data))
-			buf = append(buf, instruction.Data...)
-		}
-	}
 	// The actual Solana version number is the Go enum value minus 1
 	// (MessageVersionV0=1 maps to Solana version 0).
 	// The wire prefix is messageVersionPrefix (0x80) OR'd with the version number.
@@ -356,18 +336,59 @@ func (mx *Message) MarshalV0() ([]byte, error) {
 	if solanaVersion > 0x7F {
 		return nil, fmt.Errorf("invalid message version: %d", mx.version)
 	}
-	buf = append([]byte{messageVersionPrefix | solanaVersion}, buf...)
+
+	staticAccountKeys := mx.getStaticKeys()
+
+	// Estimate buffer size: 1 (version) + 3 (header) + compactU16 + 32*keys + 32 (blockhash) + instructions + lookups.
+	estimatedSize := 1 + 3 + 3 + 32*len(staticAccountKeys) + 32 + 3
+	for i := range mx.Instructions {
+		estimatedSize += 1 + 3 + len(mx.Instructions[i].Accounts) + 3 + len(mx.Instructions[i].Data)
+	}
+	estimatedSize += 3 // lookups length
+	for i := range mx.AddressTableLookups {
+		estimatedSize += 32 + 3 + len(mx.AddressTableLookups[i].WritableIndexes) + 3 + len(mx.AddressTableLookups[i].ReadonlyIndexes)
+	}
+
+	// Write version prefix first to avoid a full-buffer prepend copy.
+	buf := make([]byte, 0, estimatedSize)
+	buf = append(buf, messageVersionPrefix|solanaVersion)
+
+	buf = append(buf,
+		mx.Header.NumRequiredSignatures,
+		mx.Header.NumReadonlySignedAccounts,
+		mx.Header.NumReadonlyUnsignedAccounts,
+	)
+
+	// Encode only the keys that are not in the address table lookups.
+	bin.EncodeCompactU16Length(&buf, len(staticAccountKeys))
+	for _, key := range staticAccountKeys {
+		buf = append(buf, key[:]...)
+	}
+
+	buf = append(buf, mx.RecentBlockhash[:]...)
+
+	bin.EncodeCompactU16Length(&buf, len(mx.Instructions))
+	for i := range mx.Instructions {
+		buf = append(buf, byte(mx.Instructions[i].ProgramIDIndex))
+		bin.EncodeCompactU16Length(&buf, len(mx.Instructions[i].Accounts))
+		for _, accountIdx := range mx.Instructions[i].Accounts {
+			buf = append(buf, byte(accountIdx))
+		}
+
+		bin.EncodeCompactU16Length(&buf, len(mx.Instructions[i].Data))
+		buf = append(buf, mx.Instructions[i].Data...)
+	}
 
 	bin.EncodeCompactU16Length(&buf, len(mx.AddressTableLookups))
-	for _, lookup := range mx.AddressTableLookups {
+	for i := range mx.AddressTableLookups {
 		// write account pubkey
-		buf = append(buf, lookup.AccountKey[:]...)
+		buf = append(buf, mx.AddressTableLookups[i].AccountKey[:]...)
 		// write writable indexes
-		bin.EncodeCompactU16Length(&buf, len(lookup.WritableIndexes))
-		buf = append(buf, lookup.WritableIndexes...)
+		bin.EncodeCompactU16Length(&buf, len(mx.AddressTableLookups[i].WritableIndexes))
+		buf = append(buf, mx.AddressTableLookups[i].WritableIndexes...)
 		// write readonly indexes
-		bin.EncodeCompactU16Length(&buf, len(lookup.ReadonlyIndexes))
-		buf = append(buf, lookup.ReadonlyIndexes...)
+		bin.EncodeCompactU16Length(&buf, len(mx.AddressTableLookups[i].ReadonlyIndexes))
+		buf = append(buf, mx.AddressTableLookups[i].ReadonlyIndexes...)
 	}
 
 	return buf, nil
@@ -421,28 +442,33 @@ func (mx *Message) UnmarshalBase64(b64 string) error {
 // in the actual address tables, and returns the accounts.
 // NOTE: you need to call `SetAddressTables` before calling this method,
 // so that the lookups can be associated with the accounts in the address tables.
-func (mx Message) GetAddressTableLookupAccounts() (PublicKeySlice, error) {
+func (mx *Message) GetAddressTableLookupAccounts() (PublicKeySlice, error) {
 	err := mx.checkPreconditions()
 	if err != nil {
 		return nil, err
 	}
-	var writable PublicKeySlice
-	var readonly PublicKeySlice
+	numWritable := mx.AddressTableLookups.NumWritableLookups()
+	numTotal := mx.AddressTableLookups.NumLookups()
 
-	for _, lookup := range mx.AddressTableLookups {
-		table, ok := mx.addressTables[lookup.AccountKey]
+	// Single allocation: writable accounts first, then readonly.
+	all := make(PublicKeySlice, 0, numTotal)
+	writable := all[:0:numWritable]
+	readonly := make(PublicKeySlice, 0, numTotal-numWritable)
+
+	for i := range mx.AddressTableLookups {
+		table, ok := mx.addressTables[mx.AddressTableLookups[i].AccountKey]
 		if !ok {
-			return writable, fmt.Errorf("address table lookup not found for account: %s", lookup.AccountKey)
+			return nil, fmt.Errorf("address table lookup not found for account: %s", mx.AddressTableLookups[i].AccountKey)
 		}
-		for _, idx := range lookup.WritableIndexes {
+		for _, idx := range mx.AddressTableLookups[i].WritableIndexes {
 			if int(idx) >= len(table) {
-				return writable, fmt.Errorf("address table lookup index out of range: %d", idx)
+				return nil, fmt.Errorf("address table lookup index out of range: %d", idx)
 			}
 			writable = append(writable, table[idx])
 		}
-		for _, idx := range lookup.ReadonlyIndexes {
+		for _, idx := range mx.AddressTableLookups[i].ReadonlyIndexes {
 			if int(idx) >= len(table) {
-				return writable, fmt.Errorf("address table lookup index out of range: %d", idx)
+				return nil, fmt.Errorf("address table lookup index out of range: %d", idx)
 			}
 			readonly = append(readonly, table[idx])
 		}
@@ -482,12 +508,12 @@ func (mx *Message) ResolveLookupsWith(writable, readonly PublicKeySlice) (err er
 	return nil
 }
 
-func (mx Message) IsResolved() bool {
+func (mx *Message) IsResolved() bool {
 	return mx.resolved
 }
 
 // GetAllKeys returns ALL the message's account keys (including the keys from resolved address lookup tables).
-func (mx Message) GetAllKeys() (keys PublicKeySlice, err error) {
+func (mx *Message) GetAllKeys() (keys PublicKeySlice, err error) {
 	if mx.resolved {
 		// If the message has been resolved, then the account keys have already
 		// been appended to the `AccountKeys` field of the message.
@@ -502,7 +528,7 @@ func (mx Message) GetAllKeys() (keys PublicKeySlice, err error) {
 	return append(mx.AccountKeys, atlAccounts...), nil
 }
 
-func (mx Message) getStaticKeys() (keys PublicKeySlice) {
+func (mx *Message) getStaticKeys() (keys PublicKeySlice) {
 	if mx.resolved {
 		// If the message has been resolved, then the account keys have already
 		// been appended to the `AccountKeys` field of the message.
@@ -663,7 +689,7 @@ func (mx *Message) UnmarshalLegacy(decoder *bin.Decoder) (err error) {
 	return nil
 }
 
-func (m Message) checkPreconditions() error {
+func (m *Message) checkPreconditions() error {
 	// if this is versioned,
 	// and there are > 0 lookups,
 	// but the address table is empty,
@@ -675,7 +701,7 @@ func (m Message) checkPreconditions() error {
 	return nil
 }
 
-func (m Message) AccountMetaList() (AccountMetaSlice, error) {
+func (m *Message) AccountMetaList() (AccountMetaSlice, error) {
 	err := m.checkPreconditions()
 	if err != nil {
 		return nil, err
@@ -687,40 +713,34 @@ func (m Message) AccountMetaList() (AccountMetaSlice, error) {
 	out := make(AccountMetaSlice, len(accountKeys))
 
 	for i, a := range accountKeys {
-		isWritable, err := m.IsWritable(a)
-		if err != nil {
-			return nil, err
-		}
-
 		out[i] = &AccountMeta{
 			PublicKey:  a,
-			IsSigner:   m.IsSigner(a),
-			IsWritable: isWritable,
+			IsSigner:   m.accountIndexIsSigner(i),
+			IsWritable: m.uncheckedAccountIndexIsWritable(i),
 		}
 	}
 
 	return out, nil
 }
 
-func (m Message) IsVersioned() bool {
+func (m *Message) IsVersioned() bool {
 	return m.version != MessageVersionLegacy
 }
 
 // Signers returns the pubkeys of all accounts that are signers.
-func (m Message) Signers() PublicKeySlice {
-	// signers always in AccountKeys
-	out := make(PublicKeySlice, 0, len(m.AccountKeys))
-	for _, a := range m.AccountKeys {
-		if m.IsSigner(a) {
-			out = append(out, a)
-		}
+func (m *Message) Signers() PublicKeySlice {
+	numSigners := int(m.Header.NumRequiredSignatures)
+	if numSigners > len(m.AccountKeys) {
+		numSigners = len(m.AccountKeys)
 	}
-
+	// Signers are always the first NumRequiredSignatures keys — no need to iterate all.
+	out := make(PublicKeySlice, numSigners)
+	copy(out, m.AccountKeys[:numSigners])
 	return out
 }
 
 // Writable returns the pubkeys of all accounts that are writable.
-func (m Message) Writable() (out PublicKeySlice, err error) {
+func (m *Message) Writable() (out PublicKeySlice, err error) {
 	err = m.checkPreconditions()
 	if err != nil {
 		return nil, err
@@ -730,13 +750,8 @@ func (m Message) Writable() (out PublicKeySlice, err error) {
 		return nil, err
 	}
 
-	for _, a := range accountKeys {
-		isWritable, err := m.IsWritable(a)
-		if err != nil {
-			return nil, err
-		}
-
-		if isWritable {
+	for i, a := range accountKeys {
+		if m.uncheckedAccountIndexIsWritable(i) {
 			out = append(out, a)
 		}
 	}
@@ -746,12 +761,12 @@ func (m Message) Writable() (out PublicKeySlice, err error) {
 
 // ResolveProgramIDIndex resolves the program ID index to a program ID.
 // DEPRECATED: use `Program(index)` instead.
-func (m Message) ResolveProgramIDIndex(programIDIndex uint16) (PublicKey, error) {
+func (m *Message) ResolveProgramIDIndex(programIDIndex uint16) (PublicKey, error) {
 	return m.Program(programIDIndex)
 }
 
 // Program returns the program key at the given index.
-func (m Message) Program(programIDIndex uint16) (PublicKey, error) {
+func (m *Message) Program(programIDIndex uint16) (PublicKey, error) {
 	// programIDIndex always in AccountKeys
 	if int(programIDIndex) < len(m.AccountKeys) {
 		return m.AccountKeys[programIDIndex], nil
@@ -760,7 +775,7 @@ func (m Message) Program(programIDIndex uint16) (PublicKey, error) {
 }
 
 // Account returns the account at the given index.
-func (m Message) Account(index uint16) (PublicKey, error) {
+func (m *Message) Account(index uint16) (PublicKey, error) {
 	if int(index) < len(m.AccountKeys) {
 		return m.AccountKeys[index], nil
 	}
@@ -775,7 +790,7 @@ func (m Message) Account(index uint16) (PublicKey, error) {
 }
 
 // GetAccountIndex returns the index of the given account (first occurrence of the account).
-func (m Message) GetAccountIndex(account PublicKey) (uint16, error) {
+func (m *Message) GetAccountIndex(account PublicKey) (uint16, error) {
 	err := m.checkPreconditions()
 	if err != nil {
 		return 0, err
@@ -786,7 +801,7 @@ func (m Message) GetAccountIndex(account PublicKey) (uint16, error) {
 	}
 
 	for idx, a := range accountKeys {
-		if a.Equals(account) {
+		if a == account {
 			return uint16(idx), nil
 		}
 	}
@@ -794,7 +809,7 @@ func (m Message) GetAccountIndex(account PublicKey) (uint16, error) {
 	return 0, fmt.Errorf("account not found: %s", account)
 }
 
-func (m Message) HasAccount(account PublicKey) (bool, error) {
+func (m *Message) HasAccount(account PublicKey) (bool, error) {
 	err := m.checkPreconditions()
 	if err != nil {
 		return false, err
@@ -805,7 +820,7 @@ func (m Message) HasAccount(account PublicKey) (bool, error) {
 	}
 
 	for _, a := range accountKeys {
-		if a.Equals(account) {
+		if a == account {
 			return true, nil
 		}
 	}
@@ -813,30 +828,27 @@ func (m Message) HasAccount(account PublicKey) (bool, error) {
 	return false, nil
 }
 
-func (m Message) IsSigner(account PublicKey) bool {
+func (m *Message) IsSigner(account PublicKey) bool {
 	// signers always in AccountKeys
 	for idx, acc := range m.AccountKeys {
-		if acc.Equals(account) {
-			return idx < int(m.Header.NumRequiredSignatures)
+		if acc == account {
+			return m.accountIndexIsSigner(idx)
 		}
 	}
 	return false
 }
 
+func (m *Message) accountIndexIsSigner(index int) bool {
+	return index < int(m.Header.NumRequiredSignatures)
+}
+
 // numStaticAccounts returns the number of accounts that are always present in the
 // account keys list (i.e. all the accounts that are NOT in the lookup table).
-func (m Message) numStaticAccounts() int {
+func (m *Message) numStaticAccounts() int {
 	if !m.resolved {
 		return len(m.AccountKeys)
 	}
 	return len(m.AccountKeys) - m.NumLookups()
-}
-
-func (m Message) isWritableInLookups(idx int) bool {
-	if idx < m.numStaticAccounts() {
-		return false
-	}
-	return idx-m.numStaticAccounts() < m.AddressTableLookups.NumWritableLookups()
 }
 
 // IsWritableStatic checks if the account is a writable account in the static accounts list, ignoring the accounts in the address table lookups.
@@ -846,7 +858,7 @@ func (m *Message) IsWritableStatic(account PublicKey) bool {
 	index := 0
 	found := false
 	for idx, acc := range accountKeys {
-		if acc.Equals(account) {
+		if acc == account {
 			found = true
 			index = idx
 		}
@@ -863,7 +875,7 @@ func (m *Message) IsWritableStatic(account PublicKey) bool {
 	return index < max(int(h.NumRequiredSignatures)-int(h.NumReadonlySignedAccounts), 0)
 }
 
-func (m Message) IsWritable(account PublicKey) (bool, error) {
+func (m *Message) IsWritable(account PublicKey) (bool, error) {
 	err := m.checkPreconditions()
 	if err != nil {
 		return false, err
@@ -876,7 +888,7 @@ func (m Message) IsWritable(account PublicKey) (bool, error) {
 	index := 0
 	found := false
 	for idx, acc := range accountKeys {
-		if acc.Equals(account) {
+		if acc == account {
 			found = true
 			index = idx
 		}
@@ -884,21 +896,29 @@ func (m Message) IsWritable(account PublicKey) (bool, error) {
 	if !found {
 		return false, nil
 	}
-	h := m.Header
-
-	if index >= m.numStaticAccounts() {
-		return m.isWritableInLookups(index), nil
-	} else if index >= int(h.NumRequiredSignatures) {
-		// Use int arithmetic to avoid underflow (Rust uses saturating_sub here).
-		numWritableUnsigned := max(m.numStaticAccounts()-int(h.NumRequiredSignatures)-int(h.NumReadonlyUnsignedAccounts), 0)
-		return index-int(h.NumRequiredSignatures) < numWritableUnsigned, nil
-	}
-	// Use int arithmetic to avoid uint8 underflow (Rust uses saturating_sub here).
-	numWritableSigned := max(int(h.NumRequiredSignatures)-int(h.NumReadonlySignedAccounts), 0)
-	return index < numWritableSigned, nil
+	return m.uncheckedAccountIndexIsWritable(index), nil
 }
 
-func (m Message) signerKeys() PublicKeySlice {
+// uncheckedAccountIndexIsWritable checks if the account at the given index is writable.
+// It does not check preconditions; the caller must ensure index is valid
+// within the full (static + lookup) account list.
+func (m *Message) uncheckedAccountIndexIsWritable(index int) bool {
+	h := m.Header
+	numStaticAccts := m.numStaticAccounts()
+
+	if index >= numStaticAccts {
+		// Account is in lookups: writable lookups come first.
+		return index-numStaticAccts < m.AddressTableLookups.NumWritableLookups()
+	} else if index >= int(h.NumRequiredSignatures) {
+		// Use int arithmetic to avoid underflow (Rust uses saturating_sub here).
+		numWritableUnsigned := max(numStaticAccts-int(h.NumRequiredSignatures)-int(h.NumReadonlyUnsignedAccounts), 0)
+		return index-int(h.NumRequiredSignatures) < numWritableUnsigned
+	}
+	// Use int arithmetic to avoid uint8 underflow (Rust uses saturating_sub here).
+	return index < max(int(h.NumRequiredSignatures)-int(h.NumReadonlySignedAccounts), 0)
+}
+
+func (m *Message) signerKeys() PublicKeySlice {
 	return m.AccountKeys[0:m.Header.NumRequiredSignatures]
 }
 
