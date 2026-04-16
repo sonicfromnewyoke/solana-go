@@ -98,7 +98,11 @@ func TypeIDFromUvarint32(v uint32) TypeID {
 
 // TypeIDFromUint32 converts a uint32 to a TypeID.
 func TypeIDFromUint32(v uint32, bo binary.ByteOrder) TypeID {
-	out := make([]byte, TypeSize.Uint32)
+	// Using make([]byte, …) rather than a stack array: when bo is an
+	// interface value, passing a slice of a named local array forces the
+	// array to the heap. The backing of make() is tracked separately and,
+	// after inlining and devirtualization, stays on the stack.
+	out := make([]byte, TypeSizeUint32)
 	bo.PutUint32(out, v)
 	return TypeIDFromBytes(out)
 }
