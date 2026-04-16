@@ -32,13 +32,15 @@ type request struct {
 	ID      uint64 `json:"id"`
 }
 
+const maxJSONRPCSafeInteger = uint64(1<<53 - 1)
+
 func newRequest(params []any, method string, configuration map[string]any, shortID bool) *request {
 	if params != nil && configuration != nil {
 		params = append(params, configuration)
 	}
 	var ID uint64
 	if !shortID {
-		ID = uint64(rand.Int63())
+		ID = uint64(rand.Int63n(int64(maxJSONRPCSafeInteger + 1)))
 	} else {
 		ID = uint64(rand.Int31())
 	}
