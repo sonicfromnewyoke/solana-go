@@ -453,17 +453,17 @@ func NewTransaction(instructions []Instruction, recentBlockHash Hash, opts ...Tr
 	}
 
 	var idx uint16
-	accountKeyIndex := make(map[string]uint16, len(message.AccountKeys)+len(lookupsWritableKeys)+len(lookupsReadOnlyKeys))
+	accountKeyIndex := make(map[PublicKey]uint16, len(message.AccountKeys)+len(lookupsWritableKeys)+len(lookupsReadOnlyKeys))
 	for _, acc := range message.AccountKeys {
-		accountKeyIndex[acc.String()] = idx
+		accountKeyIndex[acc] = idx
 		idx++
 	}
 	for _, acc := range lookupsWritableKeys {
-		accountKeyIndex[acc.String()] = idx
+		accountKeyIndex[acc] = idx
 		idx++
 	}
 	for _, acc := range lookupsReadOnlyKeys {
-		accountKeyIndex[acc.String()] = idx
+		accountKeyIndex[acc] = idx
 		idx++
 	}
 
@@ -479,14 +479,14 @@ func NewTransaction(instructions []Instruction, recentBlockHash Hash, opts ...Tr
 		accounts = instruction.Accounts()
 		accountIndex := make([]uint16, len(accounts))
 		for idx, acc := range accounts {
-			accountIndex[idx] = accountKeyIndex[acc.PublicKey.String()]
+			accountIndex[idx] = accountKeyIndex[acc.PublicKey]
 		}
 		data, err := instruction.Data()
 		if err != nil {
 			return nil, fmt.Errorf("unable to encode instructions [%d]: %w", txIdx, err)
 		}
 		message.Instructions = append(message.Instructions, CompiledInstruction{
-			ProgramIDIndex: accountKeyIndex[instruction.ProgramID().String()],
+			ProgramIDIndex: accountKeyIndex[instruction.ProgramID()],
 			Accounts:       accountIndex,
 			Data:           data,
 		})

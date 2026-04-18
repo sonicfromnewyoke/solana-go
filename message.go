@@ -23,6 +23,7 @@ import (
 
 	bin "github.com/gagliardetto/binary"
 	"github.com/gagliardetto/treeout"
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/gagliardetto/solana-go/text"
 )
@@ -195,42 +196,69 @@ func (mx *Message) NumWritableLookups() int {
 func (mx Message) MarshalJSON() ([]byte, error) {
 	if mx.version == MessageVersionLegacy {
 		out := struct {
-			AccountKeys     []string              `json:"accountKeys"`
+			AccountKeys     PublicKeySlice        `json:"accountKeys"`
 			Header          MessageHeader         `json:"header"`
-			RecentBlockhash string                `json:"recentBlockhash"`
+			RecentBlockhash Hash                  `json:"recentBlockhash"`
 			Instructions    []CompiledInstruction `json:"instructions"`
 		}{
-			AccountKeys:     make([]string, len(mx.AccountKeys)),
+			AccountKeys:     mx.AccountKeys,
 			Header:          mx.Header,
-			RecentBlockhash: mx.RecentBlockhash.String(),
+			RecentBlockhash: mx.RecentBlockhash,
 			Instructions:    mx.Instructions,
-		}
-		for i, key := range mx.AccountKeys {
-			out.AccountKeys[i] = key.String()
 		}
 		return json.Marshal(out)
 	}
 	// Versioned message:
+	lookups := mx.AddressTableLookups
+	if lookups == nil {
+		lookups = MessageAddressTableLookupSlice{}
+	}
 	out := struct {
-		AccountKeys         []string                    `json:"accountKeys"`
-		Header              MessageHeader               `json:"header"`
-		RecentBlockhash     string                      `json:"recentBlockhash"`
-		Instructions        []CompiledInstruction       `json:"instructions"`
-		AddressTableLookups []MessageAddressTableLookup `json:"addressTableLookups"`
+		AccountKeys         PublicKeySlice                 `json:"accountKeys"`
+		Header              MessageHeader                  `json:"header"`
+		RecentBlockhash     Hash                           `json:"recentBlockhash"`
+		Instructions        []CompiledInstruction          `json:"instructions"`
+		AddressTableLookups MessageAddressTableLookupSlice `json:"addressTableLookups"`
 	}{
-		AccountKeys:         make([]string, len(mx.AccountKeys)),
+		AccountKeys:         mx.AccountKeys,
 		Header:              mx.Header,
-		RecentBlockhash:     mx.RecentBlockhash.String(),
+		RecentBlockhash:     mx.RecentBlockhash,
 		Instructions:        mx.Instructions,
-		AddressTableLookups: mx.AddressTableLookups,
-	}
-	for i, key := range mx.AccountKeys {
-		out.AccountKeys[i] = key.String()
-	}
-	if out.AddressTableLookups == nil {
-		out.AddressTableLookups = make([]MessageAddressTableLookup, 0)
+		AddressTableLookups: lookups,
 	}
 	return json.Marshal(out)
+}
+
+// UnmarshalJSON decodes the message from JSON and determines its version.
+// The Solana RPC emits `addressTableLookups` only for versioned (V0+)
+// messages; its presence in the JSON is what distinguishes V0 from legacy,
+// since the private `version` field has no wire representation.
+func (mx *Message) UnmarshalJSON(data []byte) error {
+	// Decode `addressTableLookups` via a RawMessage pointer so presence of the
+	// key can be detected in a single parse. A non-nil pointer means the key
+	// was present in the JSON (even if its value is `null`), which selects V0.
+	aux := struct {
+		AccountKeys         PublicKeySlice        `json:"accountKeys"`
+		Header              MessageHeader         `json:"header"`
+		RecentBlockhash     Hash                  `json:"recentBlockhash"`
+		Instructions        []CompiledInstruction `json:"instructions"`
+		AddressTableLookups *jsoniter.RawMessage  `json:"addressTableLookups"`
+	}{}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	mx.AccountKeys = aux.AccountKeys
+	mx.Header = aux.Header
+	mx.RecentBlockhash = aux.RecentBlockhash
+	mx.Instructions = aux.Instructions
+
+	if aux.AddressTableLookups == nil {
+		mx.version = MessageVersionLegacy
+		mx.AddressTableLookups = nil
+		return nil
+	}
+	mx.version = MessageVersionV0
+	return json.Unmarshal(*aux.AddressTableLookups, &mx.AddressTableLookups)
 }
 
 func (mx *Message) EncodeToTree(txTree treeout.Branches) {

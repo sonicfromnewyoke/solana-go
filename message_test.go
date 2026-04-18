@@ -1233,6 +1233,72 @@ func TestHasDuplicates_Loaded(t *testing.T) {
 	})
 }
 
+// Regression test for https://github.com/solana-foundation/solana-go/issues/339:
+// when decoding an RPC response with `encoding: json`, the Message version was
+// always left as Legacy because the private `version` field has no JSON tag.
+// The presence of `addressTableLookups` in the raw JSON now selects V0.
+func TestMessageJSONVersionDetection(t *testing.T) {
+	legacyJSON := []byte(`{
+		"accountKeys": ["11111111111111111111111111111111"],
+		"header": {"numRequiredSignatures":1,"numReadonlySignedAccounts":0,"numReadonlyUnsignedAccounts":0},
+		"recentBlockhash": "11111111111111111111111111111111",
+		"instructions": []
+	}`)
+	v0JSON := []byte(`{
+		"accountKeys": ["11111111111111111111111111111111"],
+		"header": {"numRequiredSignatures":1,"numReadonlySignedAccounts":0,"numReadonlyUnsignedAccounts":0},
+		"recentBlockhash": "11111111111111111111111111111111",
+		"instructions": [],
+		"addressTableLookups": []
+	}`)
+
+	var legacy Message
+	require.NoError(t, json.Unmarshal(legacyJSON, &legacy))
+	assert.Equal(t, MessageVersionLegacy, legacy.GetVersion())
+	assert.False(t, legacy.IsVersioned())
+
+	var versioned Message
+	require.NoError(t, json.Unmarshal(v0JSON, &versioned))
+	assert.Equal(t, MessageVersionV0, versioned.GetVersion())
+	assert.True(t, versioned.IsVersioned())
+}
+
+// TestMessageJSONVersionRoundtrip ensures MarshalJSON/UnmarshalJSON preserve
+// the message version across the round-trip.
+func TestMessageJSONVersionRoundtrip(t *testing.T) {
+	blockhash := Hash{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+		17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
+
+	for _, tc := range []struct {
+		name    string
+		version MessageVersion
+		lookups MessageAddressTableLookupSlice
+	}{
+		{"legacy", MessageVersionLegacy, nil},
+		{"v0_no_lookups", MessageVersionV0, nil},
+		{"v0_with_lookups", MessageVersionV0, MessageAddressTableLookupSlice{
+			{AccountKey: newUniqueKey(), WritableIndexes: []uint8{0, 1}, ReadonlyIndexes: []uint8{2}},
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			original := Message{
+				version:             tc.version,
+				Header:              MessageHeader{NumRequiredSignatures: 1},
+				AccountKeys:         PublicKeySlice{newUniqueKey()},
+				RecentBlockhash:     blockhash,
+				Instructions:        []CompiledInstruction{},
+				AddressTableLookups: tc.lookups,
+			}
+			data, err := json.Marshal(original)
+			require.NoError(t, err)
+
+			var decoded Message
+			require.NoError(t, json.Unmarshal(data, &decoded))
+			assert.Equal(t, tc.version, decoded.GetVersion())
+		})
+	}
+}
+
 // hasDuplicates is a test helper matching Rust's has_duplicates check.
 func hasDuplicates(keys PublicKeySlice) bool {
 	seen := make(map[PublicKey]struct{}, len(keys))
