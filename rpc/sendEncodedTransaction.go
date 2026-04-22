@@ -46,6 +46,9 @@ func (cl *Client) SendEncodedTransactionWithOpts(
 	encodedTx string,
 	opts TransactionOpts,
 ) (signature solana.Signature, err error) {
+	if opts.PreflightCommitment == "" {
+		opts.PreflightCommitment = cl.defaultCommitment
+	}
 	obj := opts.ToMap()
 	params := []any{
 		encodedTx,

@@ -70,11 +70,17 @@ func (cl *Client) GetBlockProductionWithOpts(
 ) (out *GetBlockProductionResult, err error) {
 	params := []any{}
 
+	var commitment CommitmentType
 	if opts != nil {
-		obj := M{}
-		if opts.Commitment != "" {
-			obj["commitment"] = opts.Commitment
-		}
+		commitment = opts.Commitment
+	}
+	commitment = cl.commitmentOrDefault(commitment)
+
+	obj := M{}
+	if commitment != "" {
+		obj["commitment"] = commitment
+	}
+	if opts != nil {
 		if opts.Range != nil {
 			rngObj := M{}
 			rngObj["firstSlot"] = opts.Range.FirstSlot
@@ -86,9 +92,9 @@ func (cl *Client) GetBlockProductionWithOpts(
 		if opts.Identity != nil {
 			obj["identity"] = opts.Identity
 		}
-		if len(obj) != 0 {
-			params = append(params, obj)
-		}
+	}
+	if len(obj) != 0 {
+		params = append(params, obj)
 	}
 	err = cl.rpcClient.CallForInto(ctx, &out, "getBlockProduction", params)
 

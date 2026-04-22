@@ -35,8 +35,9 @@ var (
 )
 
 type Client struct {
-	rpcURL    string
-	rpcClient JSONRPCClient
+	rpcURL            string
+	rpcClient         JSONRPCClient
+	defaultCommitment CommitmentType
 }
 
 type JSONRPCClient interface {
@@ -45,26 +46,88 @@ type JSONRPCClient interface {
 	CallBatch(ctx context.Context, requests jsonrpc.RPCRequests) (jsonrpc.RPCResponses, error)
 }
 
-// New creates a new Solana JSON RPC client.
+// New creates a new Solana JSON RPC client with the default HTTP timeout
+// (5 minutes) and a default commitment of "finalized".
 // Client is safe for concurrent use by multiple goroutines.
 func New(rpcEndpoint string) *Client {
-	opts := &jsonrpc.RPCClientOpts{
-		HTTPClient: newHTTP(),
-	}
-
-	rpcClient := jsonrpc.NewClientWithOpts(rpcEndpoint, opts)
-	return NewWithCustomRPCClient(rpcClient)
+	return NewWithTimeoutAndCommitment(rpcEndpoint, defaultTimeout, CommitmentFinalized)
 }
 
-// New creates a new Solana JSON RPC client with the provided custom headers.
-// The provided headers will be added to each RPC request sent via this RPC client.
+// NewWithHeaders creates a new Solana JSON RPC client with the provided
+// custom headers. The provided headers will be added to each RPC request.
+// The HTTP timeout is the default (5 minutes) and the default commitment
+// is "finalized".
 func NewWithHeaders(rpcEndpoint string, headers map[string]string) *Client {
 	opts := &jsonrpc.RPCClientOpts{
-		HTTPClient:    newHTTP(),
+		HTTPClient:    newHTTP(defaultTimeout),
 		CustomHeaders: headers,
 	}
 	rpcClient := jsonrpc.NewClientWithOpts(rpcEndpoint, opts)
-	return NewWithCustomRPCClient(rpcClient)
+	return newClientWithCommitment(rpcClient, CommitmentFinalized)
+}
+
+// NewWithCommitment creates a new Solana JSON RPC client with the default
+// HTTP timeout and a caller-specified default commitment level. RPC methods
+// that accept a commitment argument will fall back to this value when the
+// caller passes the zero value.
+func NewWithCommitment(rpcEndpoint string, commitment CommitmentType) *Client {
+	return NewWithTimeoutAndCommitment(rpcEndpoint, defaultTimeout, commitment)
+}
+
+// NewWithTimeout creates a new Solana JSON RPC client with a caller-specified
+// HTTP timeout and a default commitment of "finalized".
+func NewWithTimeout(rpcEndpoint string, timeout time.Duration) *Client {
+	return NewWithTimeoutAndCommitment(rpcEndpoint, timeout, CommitmentFinalized)
+}
+
+// NewWithTimeoutAndCommitment creates a new Solana JSON RPC client with a
+// caller-specified HTTP timeout and default commitment level. Mirrors
+// RpcClient::new_with_timeout_and_commitment in the Rust solana-rpc-client.
+func NewWithTimeoutAndCommitment(rpcEndpoint string, timeout time.Duration, commitment CommitmentType) *Client {
+	opts := &jsonrpc.RPCClientOpts{
+		HTTPClient: newHTTP(timeout),
+	}
+	rpcClient := jsonrpc.NewClientWithOpts(rpcEndpoint, opts)
+	return newClientWithCommitment(rpcClient, commitment)
+}
+
+// NewWithCustomRPCClient creates a new Solana RPC client with the provided
+// RPC client. The default commitment is "finalized"; use
+// NewWithCustomRPCClientAndCommitment to override.
+func NewWithCustomRPCClient(rpcClient JSONRPCClient) *Client {
+	return newClientWithCommitment(rpcClient, CommitmentFinalized)
+}
+
+// NewWithCustomRPCClientAndCommitment creates a new Solana RPC client with
+// the provided RPC client and a caller-specified default commitment level.
+func NewWithCustomRPCClientAndCommitment(rpcClient JSONRPCClient, commitment CommitmentType) *Client {
+	return newClientWithCommitment(rpcClient, commitment)
+}
+
+func newClientWithCommitment(rpcClient JSONRPCClient, commitment CommitmentType) *Client {
+	if commitment == "" {
+		commitment = CommitmentFinalized
+	}
+	return &Client{
+		rpcClient:         rpcClient,
+		defaultCommitment: commitment,
+	}
+}
+
+// Commitment returns the default commitment level that this client applies
+// when a method is called without an explicit commitment argument.
+func (cl *Client) Commitment() CommitmentType {
+	return cl.defaultCommitment
+}
+
+// commitmentOrDefault returns c when it is non-empty, otherwise the client's
+// default commitment. Used internally by every RPC method that accepts a
+// commitment argument.
+func (cl *Client) commitmentOrDefault(c CommitmentType) CommitmentType {
+	if c != "" {
+		return c
+	}
+	return cl.defaultCommitment
 }
 
 // Close closes the client.
@@ -78,46 +141,34 @@ func (cl *Client) Close() error {
 	return nil
 }
 
-// NewWithCustomRPCClient creates a new Solana RPC client
-// with the provided RPC client.
-func NewWithCustomRPCClient(rpcClient JSONRPCClient) *Client {
-	return &Client{
-		rpcClient: rpcClient,
-	}
-}
-
 var (
 	defaultMaxIdleConnsPerHost = 9
 	defaultTimeout             = 5 * time.Minute
 	defaultKeepAlive           = 180 * time.Second
 )
 
-func newHTTPTransport() *http.Transport {
+func newHTTPTransport(timeout time.Duration) *http.Transport {
 	return &http.Transport{
-		IdleConnTimeout:     defaultTimeout,
+		IdleConnTimeout:     timeout,
 		MaxConnsPerHost:     defaultMaxIdleConnsPerHost,
 		MaxIdleConnsPerHost: defaultMaxIdleConnsPerHost,
 		Proxy:               http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
-			Timeout:   defaultTimeout,
+			Timeout:   timeout,
 			KeepAlive: defaultKeepAlive,
 			DualStack: true,
 		}).DialContext,
-		ForceAttemptHTTP2: true,
-		// MaxIdleConns:          100,
+		ForceAttemptHTTP2:   true,
 		TLSHandshakeTimeout: 10 * time.Second,
-		// ExpectContinueTimeout: 1 * time.Second,
 	}
 }
 
-// newHTTP returns a new Client from the provided config.
-// Client is safe for concurrent use by multiple goroutines.
-func newHTTP() *http.Client {
-	tr := newHTTPTransport()
-
+// newHTTP returns a new http.Client configured with the given total-request
+// timeout. Safe for concurrent use by multiple goroutines.
+func newHTTP(timeout time.Duration) *http.Client {
 	return &http.Client{
-		Timeout:   defaultTimeout,
-		Transport: gzhttp.Transport(tr),
+		Timeout:   timeout,
+		Transport: gzhttp.Transport(newHTTPTransport(timeout)),
 	}
 }
 

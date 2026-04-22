@@ -91,15 +91,20 @@ func (cl *Client) GetBlockWithOpts(
 		"encoding": solana.EncodingBase64,
 	}
 
+	var commitment CommitmentType
+	if opts != nil {
+		commitment = opts.Commitment
+	}
+	if commitment = cl.commitmentOrDefault(commitment); commitment != "" {
+		obj["commitment"] = commitment
+	}
+
 	if opts != nil {
 		if opts.TransactionDetails != "" {
 			obj["transactionDetails"] = opts.TransactionDetails
 		}
 		if opts.Rewards != nil {
 			obj["rewards"] = opts.Rewards
-		}
-		if opts.Commitment != "" {
-			obj["commitment"] = opts.Commitment
 		}
 		if opts.Encoding != "" {
 			if !solana.IsAnyOfEncodingType(
@@ -176,15 +181,20 @@ func (cl *Client) GetParsedBlockWithOpts(
 		"encoding": solana.EncodingJSONParsed,
 	}
 
+	var commitment CommitmentType
+	if opts != nil {
+		commitment = opts.Commitment
+	}
+	if commitment = cl.commitmentOrDefault(commitment); commitment != "" {
+		obj["commitment"] = commitment
+	}
+
 	if opts != nil {
 		if opts.TransactionDetails != "" {
 			obj["transactionDetails"] = opts.TransactionDetails
 		}
 		if opts.Rewards != nil {
 			obj["rewards"] = opts.Rewards
-		}
-		if opts.Commitment != "" {
-			obj["commitment"] = opts.Commitment
 		}
 		if opts.MaxSupportedTransactionVersion != nil {
 			obj["maxSupportedTransactionVersion"] = *opts.MaxSupportedTransactionVersion

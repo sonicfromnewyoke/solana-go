@@ -23,6 +23,7 @@ func (cl *Client) GetEpochInfo(
 	ctx context.Context,
 	commitment CommitmentType, // optional
 ) (out *GetEpochInfoResult, err error) {
+	commitment = cl.commitmentOrDefault(commitment)
 	params := []any{}
 	if commitment != "" {
 		params = append(params, M{"commitment": commitment})

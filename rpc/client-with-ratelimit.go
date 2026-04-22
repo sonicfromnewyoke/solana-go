@@ -22,7 +22,7 @@ func NewWithRateLimit(
 	rps int, // requests per second
 ) JSONRPCClient {
 	opts := &jsonrpc.RPCClientOpts{
-		HTTPClient: newHTTP(),
+		HTTPClient: newHTTP(defaultTimeout),
 	}
 
 	rpcClient := jsonrpc.NewClientWithOpts(rpcEndpoint, opts)

@@ -24,7 +24,7 @@ func NewWithLimiter(
 	b int, // number of requests per time frame
 ) JSONRPCClient {
 	opts := &jsonrpc.RPCClientOpts{
-		HTTPClient: newHTTP(),
+		HTTPClient: newHTTP(defaultTimeout),
 	}
 
 	rpcClient := jsonrpc.NewClientWithOpts(rpcEndpoint, opts)

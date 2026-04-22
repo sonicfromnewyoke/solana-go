@@ -151,12 +151,18 @@ func (cl *Client) SimulateRawTransactionWithOpts(
 	obj := M{
 		"encoding": "base64",
 	}
+
+	var commitment CommitmentType
+	if opts != nil {
+		commitment = opts.Commitment
+	}
+	if commitment = cl.commitmentOrDefault(commitment); commitment != "" {
+		obj["commitment"] = commitment
+	}
+
 	if opts != nil {
 		if opts.SigVerify {
 			obj["sigVerify"] = opts.SigVerify
-		}
-		if opts.Commitment != "" {
-			obj["commitment"] = opts.Commitment
 		}
 		if opts.ReplaceRecentBlockhash {
 			obj["replaceRecentBlockhash"] = opts.ReplaceRecentBlockhash

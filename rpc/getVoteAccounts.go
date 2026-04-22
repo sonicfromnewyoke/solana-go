@@ -43,11 +43,18 @@ func (cl *Client) GetVoteAccounts(
 	opts *GetVoteAccountsOpts,
 ) (out *GetVoteAccountsResult, err error) {
 	params := []any{}
+
+	var commitment CommitmentType
 	if opts != nil {
-		obj := M{}
-		if opts.Commitment != "" {
-			obj["commitment"] = string(opts.Commitment)
-		}
+		commitment = opts.Commitment
+	}
+	commitment = cl.commitmentOrDefault(commitment)
+
+	obj := M{}
+	if commitment != "" {
+		obj["commitment"] = string(commitment)
+	}
+	if opts != nil {
 		if opts.VotePubkey != nil {
 			obj["votePubkey"] = opts.VotePubkey.String()
 		}
@@ -57,9 +64,9 @@ func (cl *Client) GetVoteAccounts(
 		if opts.DelinquentSlotDistance != nil {
 			obj["delinquentSlotDistance"] = opts.DelinquentSlotDistance
 		}
-		if len(obj) > 0 {
-			params = append(params, obj)
-		}
+	}
+	if len(obj) > 0 {
+		params = append(params, obj)
 	}
 	err = cl.rpcClient.CallForInto(ctx, &out, "getVoteAccounts", params)
 	return

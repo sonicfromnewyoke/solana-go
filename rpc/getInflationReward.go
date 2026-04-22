@@ -39,19 +39,24 @@ func (cl *Client) GetInflationReward(
 
 ) (out []*GetInflationRewardResult, err error) {
 	params := []any{addresses}
+
+	var commitment CommitmentType
 	if opts != nil {
-		obj := M{}
-		if opts.Commitment != "" {
-			obj["commitment"] = opts.Commitment
-		}
-		if opts.Epoch != nil {
-			obj["epoch"] = opts.Epoch
-		}
-		if len(obj) > 0 {
-			params = append(params, obj)
-		}
+		commitment = opts.Commitment
 	}
-	// TODO: check
+	commitment = cl.commitmentOrDefault(commitment)
+
+	obj := M{}
+	if commitment != "" {
+		obj["commitment"] = commitment
+	}
+	if opts != nil && opts.Epoch != nil {
+		obj["epoch"] = opts.Epoch
+	}
+	if len(obj) > 0 {
+		params = append(params, obj)
+	}
+
 	err = cl.rpcClient.CallForInto(ctx, &out, "getInflationReward", params)
 	return
 }

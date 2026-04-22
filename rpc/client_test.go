@@ -58,7 +58,8 @@ func TestClient_GetAccountInfo(t *testing.T) {
 			"params": []any{
 				pubkeyString,
 				map[string]any{
-					"encoding": "base64",
+					"commitment": string(CommitmentFinalized),
+					"encoding":   "base64",
 				},
 			},
 		},
@@ -284,7 +285,8 @@ func TestClient_GetBlock(t *testing.T) {
 			"params": []any{
 				float64(block),
 				map[string]any{
-					"encoding": string(solana.EncodingBase64),
+					"commitment": string(CommitmentFinalized),
+					"encoding":   string(solana.EncodingBase64),
 				},
 			},
 		},
@@ -636,7 +638,11 @@ func TestClient_GetBlockProduction(t *testing.T) {
 			"id":      any(nil),
 			"jsonrpc": "2.0",
 			"method":  "getBlockProduction",
-			"params":  []any{},
+			"params": []any{
+				map[string]any{
+					"commitment": string(CommitmentFinalized),
+				},
+			},
 		},
 		reqBody,
 	)
@@ -1910,6 +1916,7 @@ func TestClient_GetProgramAccountsWithOpts_SortResults(t *testing.T) {
 			"params": []any{
 				pubkeyString,
 				map[string]any{
+					"commitment":  string(CommitmentFinalized),
 					"encoding":    "base64",
 					"sortResults": true,
 				},
@@ -3237,7 +3244,8 @@ func TestClient_SimulateTransaction(t *testing.T) {
 			"params": []any{
 				base64.StdEncoding.EncodeToString(txData),
 				map[string]any{
-					"encoding": "base64",
+					"commitment": string(CommitmentFinalized),
+					"encoding":   "base64",
 				},
 			},
 		},

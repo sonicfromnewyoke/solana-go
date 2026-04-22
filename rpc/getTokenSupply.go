@@ -26,6 +26,7 @@ func (cl *Client) GetTokenSupply(
 	tokenMint solana.PublicKey, // Pubkey of token Mint to query
 	commitment CommitmentType, // optional
 ) (out *GetTokenSupplyResult, err error) {
+	commitment = cl.commitmentOrDefault(commitment)
 	params := []any{tokenMint}
 	if commitment != "" {
 		params = append(params,

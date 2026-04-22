@@ -40,8 +40,18 @@ func (cl *Client) GetTransaction(
 	opts *GetTransactionOpts,
 ) (out *GetTransactionResult, err error) {
 	params := []any{txSig}
+
+	var commitment CommitmentType
 	if opts != nil {
-		obj := M{}
+		commitment = opts.Commitment
+	}
+	commitment = cl.commitmentOrDefault(commitment)
+
+	obj := M{}
+	if commitment != "" {
+		obj["commitment"] = commitment
+	}
+	if opts != nil {
 		if opts.Encoding != "" {
 			if !solana.IsAnyOfEncodingType(
 				opts.Encoding,
@@ -56,15 +66,12 @@ func (cl *Client) GetTransaction(
 			}
 			obj["encoding"] = opts.Encoding
 		}
-		if opts.Commitment != "" {
-			obj["commitment"] = opts.Commitment
-		}
 		if opts.MaxSupportedTransactionVersion != nil {
 			obj["maxSupportedTransactionVersion"] = *opts.MaxSupportedTransactionVersion
 		}
-		if len(obj) > 0 {
-			params = append(params, obj)
-		}
+	}
+	if len(obj) > 0 {
+		params = append(params, obj)
 	}
 	err = cl.rpcClient.CallForInto(ctx, &out, "getTransaction", params)
 	if err != nil {

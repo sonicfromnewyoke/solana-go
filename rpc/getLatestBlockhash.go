@@ -27,6 +27,7 @@ func (cl *Client) GetLatestBlockhash(
 	ctx context.Context,
 	commitment CommitmentType, // optional
 ) (out *GetLatestBlockhashResult, err error) {
+	commitment = cl.commitmentOrDefault(commitment)
 	params := []any{}
 	if commitment != "" {
 		params = append(params, M{"commitment": commitment})

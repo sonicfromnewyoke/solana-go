@@ -23,6 +23,7 @@ func (cl *Client) GetTransactionCount(
 	ctx context.Context,
 	commitment CommitmentType, // optional
 ) (out uint64, err error) {
+	commitment = cl.commitmentOrDefault(commitment)
 	params := []any{}
 	if commitment != "" {
 		params = append(params,

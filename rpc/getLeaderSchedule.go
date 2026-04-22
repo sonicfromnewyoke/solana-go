@@ -48,20 +48,25 @@ func (cl *Client) GetLeaderScheduleWithOpts(
 	opts *GetLeaderScheduleOpts,
 ) (out GetLeaderScheduleResult, err error) {
 	params := []any{}
+	if opts != nil && opts.Epoch != nil {
+		params = append(params, opts.Epoch)
+	}
+
+	var commitment CommitmentType
 	if opts != nil {
-		if opts.Epoch != nil {
-			params = append(params, opts.Epoch)
-		}
-		obj := M{}
-		if opts.Commitment != "" {
-			obj["commitment"] = opts.Commitment
-		}
-		if opts.Identity != nil {
-			obj["identity"] = opts.Identity
-		}
-		if len(obj) > 0 {
-			params = append(params, obj)
-		}
+		commitment = opts.Commitment
+	}
+	commitment = cl.commitmentOrDefault(commitment)
+
+	obj := M{}
+	if commitment != "" {
+		obj["commitment"] = commitment
+	}
+	if opts != nil && opts.Identity != nil {
+		obj["identity"] = opts.Identity
+	}
+	if len(obj) > 0 {
+		params = append(params, obj)
 	}
 	err = cl.rpcClient.CallForInto(ctx, &out, "getLeaderSchedule", params)
 	if err != nil {

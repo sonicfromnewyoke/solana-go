@@ -68,11 +68,17 @@ func (cl *Client) GetTokenAccountsByDelegate(
 	}
 	defaultEncoding := solana.EncodingBase64
 	{
-		optsObj := M{}
+		var commitment CommitmentType
 		if opts != nil {
-			if opts.Commitment != "" {
-				optsObj["commitment"] = opts.Commitment
-			}
+			commitment = opts.Commitment
+		}
+		commitment = cl.commitmentOrDefault(commitment)
+
+		optsObj := M{}
+		if commitment != "" {
+			optsObj["commitment"] = commitment
+		}
+		if opts != nil {
 			if opts.Encoding != "" {
 				optsObj["encoding"] = opts.Encoding
 			} else {
@@ -87,11 +93,11 @@ func (cl *Client) GetTokenAccountsByDelegate(
 					return nil, errors.New("cannot use dataSlice with EncodingJSONParsed")
 				}
 			}
-			if len(optsObj) > 0 {
-				params = append(params, optsObj)
-			}
 		} else {
-			params = append(params, M{"encoding": defaultEncoding})
+			optsObj["encoding"] = defaultEncoding
+		}
+		if len(optsObj) > 0 {
+			params = append(params, optsObj)
 		}
 	}
 

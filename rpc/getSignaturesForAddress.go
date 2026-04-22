@@ -63,8 +63,18 @@ func (cl *Client) GetSignaturesForAddressWithOpts(
 	opts *GetSignaturesForAddressOpts,
 ) (out []*TransactionSignature, err error) {
 	params := []any{account}
+
+	var commitment CommitmentType
 	if opts != nil {
-		obj := M{}
+		commitment = opts.Commitment
+	}
+	commitment = cl.commitmentOrDefault(commitment)
+
+	obj := M{}
+	if commitment != "" {
+		obj["commitment"] = commitment
+	}
+	if opts != nil {
 		if opts.Limit != nil {
 			obj["limit"] = opts.Limit
 		}
@@ -74,15 +84,12 @@ func (cl *Client) GetSignaturesForAddressWithOpts(
 		if !opts.Until.IsZero() {
 			obj["until"] = opts.Until
 		}
-		if opts.Commitment != "" {
-			obj["commitment"] = opts.Commitment
-		}
 		if opts.MinContextSlot != nil {
 			obj["minContextSlot"] = *opts.MinContextSlot
 		}
-		if len(obj) > 0 {
-			params = append(params, obj)
-		}
+	}
+	if len(obj) > 0 {
+		params = append(params, obj)
 	}
 
 	err = cl.rpcClient.CallForInto(ctx, &out, "getSignaturesForAddress", params)

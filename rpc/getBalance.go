@@ -32,6 +32,7 @@ func (cl *Client) GetBalance(
 	// Commitment requirement. Optional.
 	commitment CommitmentType,
 ) (out *GetBalanceResult, err error) {
+	commitment = cl.commitmentOrDefault(commitment)
 	params := []any{publicKey}
 	if commitment != "" {
 		params = append(params, M{"commitment": string(commitment)})

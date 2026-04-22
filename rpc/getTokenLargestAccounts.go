@@ -26,6 +26,7 @@ func (cl *Client) GetTokenLargestAccounts(
 	tokenMint solana.PublicKey, // Pubkey of token Mint to query
 	commitment CommitmentType, // optional
 ) (out *GetTokenLargestAccountsResult, err error) {
+	commitment = cl.commitmentOrDefault(commitment)
 	params := []any{tokenMint}
 	if commitment != "" {
 		params = append(params,

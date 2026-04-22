@@ -24,6 +24,7 @@ func (cl *Client) GetFeeForMessage(
 	message string, // Base-64 encoded Message
 	commitment CommitmentType, // optional
 ) (out *GetFeeForMessageResult, err error) {
+	commitment = cl.commitmentOrDefault(commitment)
 	params := []any{message}
 	if commitment != "" {
 		params = append(params, M{"commitment": commitment})

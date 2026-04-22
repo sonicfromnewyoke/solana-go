@@ -116,12 +116,17 @@ func (cl *Client) getAccountInfoWithOpts(
 		"encoding": solana.EncodingBase64,
 	}
 
+	var commitment CommitmentType
+	if opts != nil {
+		commitment = opts.Commitment
+	}
+	if commitment = cl.commitmentOrDefault(commitment); commitment != "" {
+		obj["commitment"] = commitment
+	}
+
 	if opts != nil {
 		if opts.Encoding != "" {
 			obj["encoding"] = opts.Encoding
-		}
-		if opts.Commitment != "" {
-			obj["commitment"] = opts.Commitment
 		}
 		if opts.DataSlice != nil {
 			obj["dataSlice"] = M{

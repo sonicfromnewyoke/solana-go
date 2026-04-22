@@ -23,6 +23,7 @@ func (cl *Client) GetStakeMinimumDelegation(
 	ctx context.Context,
 	commitment CommitmentType, // optional
 ) (out *GetStakeMinimumDelegationResult, err error) {
+	commitment = cl.commitmentOrDefault(commitment)
 	params := []interface{}{}
 	if commitment != "" {
 		params = append(params, M{"commitment": string(commitment)})

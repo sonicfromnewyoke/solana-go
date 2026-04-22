@@ -28,6 +28,7 @@ func (cl *Client) GetBlocks(
 	endSlot *uint64, // optional
 	commitment CommitmentType, // optional
 ) (out BlocksResult, err error) {
+	commitment = cl.commitmentOrDefault(commitment)
 	params := []any{startSlot}
 	if endSlot != nil {
 		params = append(params, endSlot)

@@ -23,6 +23,7 @@ func (cl *Client) GetInflationGovernor(
 	ctx context.Context,
 	commitment CommitmentType, // optional
 ) (out *GetInflationGovernorResult, err error) {
+	commitment = cl.commitmentOrDefault(commitment)
 	params := []any{}
 	if commitment != "" {
 		params = append(params,

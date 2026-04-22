@@ -52,18 +52,26 @@ func (cl *Client) GetLargestAccountsWithOpts(
 	ctx context.Context,
 	opts *GetLargestAccountsOpts,
 ) (out *GetLargestAccountsResult, err error) {
+	var commitment CommitmentType
+	var filter LargestAccountsFilterType
+	var sortResults *bool
+	if opts != nil {
+		commitment = opts.Commitment
+		filter = opts.Filter
+		sortResults = opts.SortResults
+	}
+	commitment = cl.commitmentOrDefault(commitment)
+
 	params := []any{}
 	obj := M{}
-	if opts != nil {
-		if opts.Commitment != "" {
-			obj["commitment"] = opts.Commitment
-		}
-		if opts.Filter != "" {
-			obj["filter"] = opts.Filter
-		}
-		if opts.SortResults != nil {
-			obj["sortResults"] = *opts.SortResults
-		}
+	if commitment != "" {
+		obj["commitment"] = commitment
+	}
+	if filter != "" {
+		obj["filter"] = filter
+	}
+	if sortResults != nil {
+		obj["sortResults"] = *sortResults
 	}
 	if len(obj) > 0 {
 		params = append(params, obj)

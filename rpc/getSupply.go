@@ -30,13 +30,17 @@ func (cl *Client) GetSupplyWithOpts(
 	ctx context.Context,
 	opts *GetSupplyOpts,
 ) (out *GetSupplyResult, err error) {
-	obj := M{
-		"commitment": CommitmentConfirmed,
+	var commitment CommitmentType
+	if opts != nil {
+		commitment = opts.Commitment
+	}
+	commitment = cl.commitmentOrDefault(commitment)
+
+	obj := M{}
+	if commitment != "" {
+		obj["commitment"] = commitment
 	}
 	if opts != nil {
-		if opts.Commitment != "" {
-			obj["commitment"] = opts.Commitment
-		}
 		obj["excludeNonCirculatingAccountsList"] = opts.ExcludeNonCirculatingAccountsList
 	}
 

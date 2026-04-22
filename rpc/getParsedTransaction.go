@@ -31,14 +31,19 @@ func (cl *Client) GetParsedTransaction(
 	opts *GetParsedTransactionOpts,
 ) (out *GetParsedTransactionResult, err error) {
 	params := []any{txSig}
-	obj := M{}
+
+	var commitment CommitmentType
 	if opts != nil {
-		if opts.Commitment != "" {
-			obj["commitment"] = opts.Commitment
-		}
-		if opts.MaxSupportedTransactionVersion != nil {
-			obj["maxSupportedTransactionVersion"] = *opts.MaxSupportedTransactionVersion
-		}
+		commitment = opts.Commitment
+	}
+	commitment = cl.commitmentOrDefault(commitment)
+
+	obj := M{}
+	if commitment != "" {
+		obj["commitment"] = commitment
+	}
+	if opts != nil && opts.MaxSupportedTransactionVersion != nil {
+		obj["maxSupportedTransactionVersion"] = *opts.MaxSupportedTransactionVersion
 	}
 	obj["encoding"] = solana.EncodingJSONParsed
 	params = append(params, obj)

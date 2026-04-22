@@ -27,6 +27,7 @@ func (cl *Client) GetBlocksWithLimit(
 	limit uint64,
 	commitment CommitmentType, // optional; "processed" is not supported. If parameter not provided, the default is "finalized".
 ) (out *BlocksResult, err error) {
+	commitment = cl.commitmentOrDefault(commitment)
 	params := []any{startSlot, limit}
 	if commitment != "" {
 		params = append(params,

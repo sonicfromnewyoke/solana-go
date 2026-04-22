@@ -26,6 +26,7 @@ func (cl *Client) GetMinimumBalanceForRentExemption(
 	dataSize uint64,
 	commitment CommitmentType, // optional
 ) (lamport uint64, err error) {
+	commitment = cl.commitmentOrDefault(commitment)
 	params := []any{dataSize}
 	if commitment != "" {
 		params = append(params, M{"commitment": commitment})

@@ -40,7 +40,7 @@ func (cl *Client) GetProgramAccountsWithOpts(
 	publicKey solana.PublicKey,
 	opts *GetProgramAccountsOpts,
 ) (out GetProgramAccountsResult, err error) {
-	params := buildGetProgramAccountsParams(publicKey, opts)
+	params := cl.buildGetProgramAccountsParams(publicKey, opts)
 	err = cl.rpcClient.CallForInto(ctx, &out, "getProgramAccounts", params)
 	return
 }
@@ -59,19 +59,25 @@ func (cl *Client) GetProgramAccountsWithContext(
 	}
 	withCtx := true
 	o.WithContext = &withCtx
-	params := buildGetProgramAccountsParams(publicKey, &o)
+	params := cl.buildGetProgramAccountsParams(publicKey, &o)
 	err = cl.rpcClient.CallForInto(ctx, &out, "getProgramAccounts", params)
 	return
 }
 
-func buildGetProgramAccountsParams(publicKey solana.PublicKey, opts *GetProgramAccountsOpts) []any {
+func (cl *Client) buildGetProgramAccountsParams(publicKey solana.PublicKey, opts *GetProgramAccountsOpts) []any {
 	obj := M{
 		"encoding": "base64",
 	}
+
+	var commitment CommitmentType
 	if opts != nil {
-		if opts.Commitment != "" {
-			obj["commitment"] = string(opts.Commitment)
-		}
+		commitment = opts.Commitment
+	}
+	if commitment = cl.commitmentOrDefault(commitment); commitment != "" {
+		obj["commitment"] = string(commitment)
+	}
+
+	if opts != nil {
 		if len(opts.Filters) != 0 {
 			obj["filters"] = opts.Filters
 		}

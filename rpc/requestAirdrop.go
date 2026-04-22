@@ -55,18 +55,26 @@ func (cl *Client) RequestAirdropWithOpts(
 		account,
 		lamports,
 	}
+
+	var commitment CommitmentType
+	var recentBlockhash *solana.Hash
 	if opts != nil {
-		obj := M{}
-		if opts.Commitment != "" {
-			obj["commitment"] = opts.Commitment
-		}
-		if opts.RecentBlockhash != nil {
-			obj["recentBlockhash"] = opts.RecentBlockhash.String()
-		}
-		if len(obj) > 0 {
-			params = append(params, obj)
-		}
+		commitment = opts.Commitment
+		recentBlockhash = opts.RecentBlockhash
 	}
+	commitment = cl.commitmentOrDefault(commitment)
+
+	obj := M{}
+	if commitment != "" {
+		obj["commitment"] = commitment
+	}
+	if recentBlockhash != nil {
+		obj["recentBlockhash"] = recentBlockhash.String()
+	}
+	if len(obj) > 0 {
+		params = append(params, obj)
+	}
+
 	err = cl.rpcClient.CallForInto(ctx, &signature, "requestAirdrop", params)
 	return
 }
