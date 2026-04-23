@@ -15,10 +15,10 @@
 package rpc
 
 import (
-	stdjson "encoding/json"
 	"testing"
 
 	"github.com/gagliardetto/solana-go"
+	stdjson "github.com/goccy/go-json"
 	"github.com/stretchr/testify/assert"
 )
 

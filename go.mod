@@ -6,7 +6,9 @@ require (
 	github.com/gagliardetto/binary v0.8.0
 	github.com/gagliardetto/gofuzz v1.2.2
 	github.com/gagliardetto/treeout v0.1.4
+	github.com/goccy/go-json v0.10.6
 	github.com/google/uuid v1.6.0
+	github.com/json-iterator/go v1.1.12
 	github.com/mr-tron/base58 v1.2.0
 	go.mongodb.org/mongo-driver/v2 v2.5.0
 )
@@ -30,7 +32,7 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
+	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -67,7 +69,6 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/gorilla/rpc v1.2.1
 	github.com/gorilla/websocket v1.5.3
-	github.com/json-iterator/go v1.1.12
 	github.com/klauspost/compress v1.18.0
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/mostynb/zstdpool-freelist v0.0.0-20201229113212-927304c0c3b1

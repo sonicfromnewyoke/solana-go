@@ -2,7 +2,6 @@ package jsonrpc
 
 import (
 	"context"
-	stdjson "encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,6 +10,7 @@ import (
 	"strconv"
 	"testing"
 
+	stdjson "github.com/goccy/go-json"
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/require"
 )

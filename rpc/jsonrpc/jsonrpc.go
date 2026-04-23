@@ -4,19 +4,28 @@ package jsonrpc
 import (
 	"bytes"
 	"context"
-	stdjson "encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"reflect"
 	"sync/atomic"
 
 	"github.com/davecgh/go-spew/spew"
+	stdjson "github.com/goccy/go-json"
+	gojson "github.com/goccy/go-json"
 	"github.com/google/uuid"
-	jsoniter "github.com/json-iterator/go"
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+var json = struct {
+	Marshal    func(v any) ([]byte, error)
+	Unmarshal  func(data []byte, v any) error
+	NewDecoder func(r io.Reader) *gojson.Decoder
+}{
+	Marshal:    gojson.Marshal,
+	Unmarshal:  gojson.Unmarshal,
+	NewDecoder: gojson.NewDecoder,
+}
 
 const (
 	jsonrpcVersion = "2.0"
@@ -520,6 +529,11 @@ func (client *rpcClient) doCall(
 				}
 				return fmt.Errorf("rpc call %v() on %v status code: %v. rpc response missing", RPCRequest.Method, httpRequest.URL.String(), httpResponse.StatusCode)
 			}
+			// Normalize a literal JSON "null" Result to a nil RawMessage so callers
+			// can treat an explicit null the same as an absent field.
+			if bytes.Equal(bytes.TrimSpace(rpcResponse.Result), []byte("null")) {
+				rpcResponse.Result = nil
+			}
 			return nil
 		},
 	)
@@ -613,6 +627,13 @@ func (client *rpcClient) doBatchCall(ctx context.Context, rpcRequest []*RPCReque
 			}
 		}
 		return nil, fmt.Errorf("rpc batch call on %v status code: %v. rpc response missing", httpRequest.URL.String(), httpResponse.StatusCode)
+	}
+
+	// Normalize a literal JSON "null" Result to a nil RawMessage per-entry.
+	for _, r := range rpcResponse {
+		if r != nil && bytes.Equal(bytes.TrimSpace(r.Result), []byte("null")) {
+			r.Result = nil
+		}
 	}
 
 	return rpcResponse, nil

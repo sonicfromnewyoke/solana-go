@@ -18,11 +18,12 @@
 package ws
 
 import (
-	stdjson "encoding/json"
 	"fmt"
 	rand "math/rand/v2"
 	"net/http"
 	"time"
+
+	stdjson "github.com/goccy/go-json"
 )
 
 type request struct {

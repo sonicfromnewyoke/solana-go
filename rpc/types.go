@@ -19,13 +19,12 @@ package rpc
 
 import (
 	"encoding/base64"
-	stdjson "encoding/json"
 	"fmt"
 	"math/big"
 
 	bin "github.com/gagliardetto/binary"
-
 	"github.com/gagliardetto/solana-go"
+	stdjson "github.com/goccy/go-json"
 )
 
 type Context struct {

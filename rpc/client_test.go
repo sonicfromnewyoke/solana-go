@@ -21,17 +21,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	stdjson "encoding/json"
 	"fmt"
 	"math/big"
 	"testing"
 
 	"github.com/AlekSi/pointer"
 	bin "github.com/gagliardetto/binary"
+	"github.com/gagliardetto/solana-go"
+	stdjson "github.com/goccy/go-json"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/gagliardetto/solana-go"
 )
 
 func TestClient_GetAccountInfo(t *testing.T) {
