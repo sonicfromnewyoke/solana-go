@@ -23,11 +23,11 @@ import (
 // length prefix, N 32-byte pubkeys, a 32-byte blockhash. A common shape
 // for hand-rolled Solana encoders.
 type txHeaderBench struct {
-	NumReqSigs       uint8
-	NumROSigned      uint8
-	NumROUnsigned    uint8
-	AccountKeys      [][32]byte // e.g. 8 keys
-	RecentBlockhash  [32]byte
+	NumReqSigs      uint8
+	NumROSigned     uint8
+	NumROUnsigned   uint8
+	AccountKeys     [][32]byte // e.g. 8 keys
+	RecentBlockhash [32]byte
 }
 
 func makeTxHeaderBench() *txHeaderBench {
