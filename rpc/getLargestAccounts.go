@@ -80,10 +80,7 @@ func (cl *Client) GetLargestAccountsWithOpts(
 	return
 }
 
-type GetLargestAccountsResult struct {
-	RPCContext
-	Value []LargestAccountsResult `json:"value"`
-}
+type GetLargestAccountsResult = RPCResponse[[]LargestAccountsResult]
 
 type LargestAccountsResult struct {
 	// Address of the account.

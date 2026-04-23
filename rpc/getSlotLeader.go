@@ -21,15 +21,26 @@ import (
 )
 
 // GetSlotLeader returns the current slot leader.
+// Supported CallOptions: WithCommitment, WithMinContextSlot.
 func (cl *Client) GetSlotLeader(
 	ctx context.Context,
-	commitment CommitmentType, // optional
+	calls ...CallOption,
 ) (out solana.PublicKey, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
-	params := []any{}
-	if commitment != "" {
-		params = append(params, M{"commitment": commitment})
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
+	obj := M{}
+	if resolved.commitment != "" {
+		obj["commitment"] = resolved.commitment
 	}
+	if resolved.minContextSlot != nil {
+		obj["minContextSlot"] = *resolved.minContextSlot
+	}
+
+	params := []any{}
+	if len(obj) > 0 {
+		params = append(params, obj)
+	}
+
 	err = cl.rpcClient.CallForInto(ctx, &out, "getSlotLeader", params)
 	return
 }

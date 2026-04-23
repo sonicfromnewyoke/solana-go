@@ -105,10 +105,7 @@ func (cl *Client) GetTokenAccountsByDelegate(
 	return
 }
 
-type GetTokenAccountsResult struct {
-	RPCContext
-	Value []*TokenAccount `json:"value"`
-}
+type GetTokenAccountsResult = RPCResponse[[]*TokenAccount]
 
 type TokenAccount struct {
 	Pubkey  solana.PublicKey `json:"pubkey"`

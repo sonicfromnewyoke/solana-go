@@ -7,18 +7,25 @@ import (
 )
 
 // IsBlockhashValid returns whether a blockhash is still valid or not.
+// Supported CallOptions: WithCommitment, WithMinContextSlot.
 func (cl *Client) IsBlockhashValid(
 	ctx context.Context,
-	// Blockhash to be queried. Required.
 	blockHash solana.Hash,
-
-	// Commitment requirement. Optional.
-	commitment CommitmentType,
+	calls ...CallOption,
 ) (out *IsValidBlockhashResult, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
+	obj := M{}
+	if resolved.commitment != "" {
+		obj["commitment"] = string(resolved.commitment)
+	}
+	if resolved.minContextSlot != nil {
+		obj["minContextSlot"] = *resolved.minContextSlot
+	}
+
 	params := []any{blockHash}
-	if commitment != "" {
-		params = append(params, M{"commitment": string(commitment)})
+	if len(obj) > 0 {
+		params = append(params, obj)
 	}
 
 	err = cl.rpcClient.CallForInto(ctx, &out, "isBlockhashValid", params)

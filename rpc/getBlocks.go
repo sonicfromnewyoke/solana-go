@@ -19,28 +19,29 @@ import (
 )
 
 // GetBlocks returns a list of confirmed blocks between two slots.
-// The result will be an array of u64 integers listing confirmed blocks
-// between start_slot and either end_slot, if provided, or latest
-// confirmed block, inclusive. Max range allowed is 500,000 slots.
+// The result is an array of u64 integers listing confirmed blocks between
+// startSlot and either endSlot (if provided) or the latest confirmed block.
+// Max range allowed is 500,000 slots.
+//
+// Supported CallOptions: WithCommitment. "processed" commitment is not
+// supported by this method.
 func (cl *Client) GetBlocks(
 	ctx context.Context,
 	startSlot uint64,
-	endSlot *uint64, // optional
-	commitment CommitmentType, // optional
+	endSlot *uint64,
+	calls ...CallOption,
 ) (out BlocksResult, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
 	params := []any{startSlot}
 	if endSlot != nil {
 		params = append(params, endSlot)
 	}
-	if commitment != "" {
-		params = append(params,
-			// TODO: provide commitment as string instead of object?
-			M{"commitment": commitment},
-		)
+	if resolved.commitment != "" {
+		params = append(params, M{"commitment": resolved.commitment})
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getBlocks", params)
 
+	err = cl.rpcClient.CallForInto(ctx, &out, "getBlocks", params)
 	return
 }
 

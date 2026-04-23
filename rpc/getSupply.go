@@ -25,7 +25,7 @@ func (cl *Client) GetSupply(ctx context.Context, commitment CommitmentType) (out
 	return cl.GetSupplyWithOpts(ctx, &GetSupplyOpts{Commitment: commitment})
 }
 
-// GetSupply returns information about the current supply.
+// GetSupplyWithOpts returns information about the current supply.
 func (cl *Client) GetSupplyWithOpts(
 	ctx context.Context,
 	opts *GetSupplyOpts,
@@ -54,10 +54,7 @@ type GetSupplyOpts struct {
 	ExcludeNonCirculatingAccountsList bool `json:"excludeNonCirculatingAccountsList,omitempty"` // exclude non circulating accounts list from response
 }
 
-type GetSupplyResult struct {
-	RPCContext
-	Value *SupplyResult `json:"value"`
-}
+type GetSupplyResult = RPCResponse[*SupplyResult]
 
 type SupplyResult struct {
 	// Total supply in lamports

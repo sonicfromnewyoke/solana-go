@@ -27,7 +27,7 @@ func main() {
 
 	out, err := client.GetInflationGovernor(
 		context.TODO(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)

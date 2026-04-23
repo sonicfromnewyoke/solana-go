@@ -20,10 +20,7 @@ import (
 	"github.com/gagliardetto/solana-go"
 )
 
-type GetBlockProductionResult struct {
-	RPCContext
-	Value BlockProductionResult `json:"value"`
-}
+type GetBlockProductionResult = RPCResponse[BlockProductionResult]
 
 type GetBlockProductionOpts struct {
 	//

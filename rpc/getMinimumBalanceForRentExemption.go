@@ -20,17 +20,21 @@ import (
 	"context"
 )
 
-// GetMinimumBalanceForRentExemption returns minimum balance required to make account rent exempt.
+// GetMinimumBalanceForRentExemption returns minimum balance required to
+// make an account of the given size rent-exempt.
+// Supported CallOptions: WithCommitment.
 func (cl *Client) GetMinimumBalanceForRentExemption(
 	ctx context.Context,
 	dataSize uint64,
-	commitment CommitmentType, // optional
+	calls ...CallOption,
 ) (lamport uint64, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
 	params := []any{dataSize}
-	if commitment != "" {
-		params = append(params, M{"commitment": commitment})
+	if resolved.commitment != "" {
+		params = append(params, M{"commitment": resolved.commitment})
 	}
+
 	err = cl.rpcClient.CallForInto(ctx, &lamport, "getMinimumBalanceForRentExemption", params)
 	return
 }

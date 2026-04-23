@@ -30,7 +30,7 @@ func main() {
 	out, err := client.GetTokenAccountBalance(
 		context.TODO(),
 		pubKey,
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)

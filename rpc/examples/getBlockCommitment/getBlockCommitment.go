@@ -25,7 +25,7 @@ func main() {
 	endpoint := rpc.TestNet_RPC
 	client := rpc.New(endpoint)
 
-	slot, err := client.GetSlot(context.TODO(), rpc.CommitmentFinalized)
+	slot, err := client.GetSlot(context.TODO(), rpc.WithCommitment(rpc.CommitmentFinalized))
 	if err != nil {
 		panic(err)
 	}

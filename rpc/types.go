@@ -37,15 +37,24 @@ type RPCContext struct {
 	Context Context `json:"context,omitempty"`
 }
 
-type GetBalanceResult struct {
+// RPCResponse is the generic "{context, value}" envelope that most Solana
+// RPC responses use. The concrete per-method result types are aliases:
+//
+//	type GetBalanceResult = RPCResponse[uint64]
+//	type GetLatestBlockhashResult = RPCResponse[*LatestBlockhashResult]
+//
+// Aliases mean the per-method types remain valid in field references and
+// struct literals; the aliases exist purely to deduplicate ~15 otherwise
+// identical struct definitions.
+type RPCResponse[T any] struct {
 	RPCContext
-	Value uint64 `json:"value"`
+	Value T `json:"value"`
 }
 
-type GetStakeMinimumDelegationResult struct {
-	RPCContext
-	Value uint64 `json:"value"`
-}
+type (
+	GetBalanceResult                = RPCResponse[uint64]
+	GetStakeMinimumDelegationResult = RPCResponse[uint64]
+)
 
 type FeeCalculator struct {
 	LamportsPerSignature uint64 `json:"lamportsPerSignature"`
@@ -339,10 +348,8 @@ func (a *GetAccountInfoResult) Bytes() []byte {
 	return a.GetBinary()
 }
 
-type IsValidBlockhashResult struct {
-	RPCContext
-	Value bool `json:"value"` // True if the blockhash is still valid.
-}
+// IsValidBlockhashResult.Value is true if the blockhash is still valid.
+type IsValidBlockhashResult = RPCResponse[bool]
 
 type Account struct {
 	// Number of lamports assigned to this account
@@ -471,10 +478,7 @@ type GetProgramAccountsOpts struct {
 
 type GetProgramAccountsResult []*KeyedAccount
 
-type GetProgramAccountsWithContextResult struct {
-	RPCContext
-	Value GetProgramAccountsResult `json:"value"`
-}
+type GetProgramAccountsWithContextResult = RPCResponse[GetProgramAccountsResult]
 
 type KeyedAccount struct {
 	Pubkey  solana.PublicKey `json:"pubkey"`

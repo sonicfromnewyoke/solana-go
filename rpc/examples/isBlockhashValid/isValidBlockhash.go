@@ -31,7 +31,7 @@ func main() {
 	out, err := client.IsBlockhashValid(
 		context.TODO(),
 		blockHash,
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)

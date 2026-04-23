@@ -19,15 +19,18 @@ import (
 )
 
 // GetStakeMinimumDelegation returns the stake minimum delegation, in lamports.
+// Supported CallOptions: WithCommitment.
 func (cl *Client) GetStakeMinimumDelegation(
 	ctx context.Context,
-	commitment CommitmentType, // optional
+	calls ...CallOption,
 ) (out *GetStakeMinimumDelegationResult, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
-	params := []interface{}{}
-	if commitment != "" {
-		params = append(params, M{"commitment": string(commitment)})
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
+	params := []any{}
+	if resolved.commitment != "" {
+		params = append(params, M{"commitment": string(resolved.commitment)})
 	}
+
 	err = cl.rpcClient.CallForInto(ctx, &out, "getStakeMinimumDelegation", params)
 	return
 }

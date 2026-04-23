@@ -19,17 +19,18 @@ import (
 )
 
 // GetInflationGovernor returns the current inflation governor.
+// Supported CallOptions: WithCommitment.
 func (cl *Client) GetInflationGovernor(
 	ctx context.Context,
-	commitment CommitmentType, // optional
+	calls ...CallOption,
 ) (out *GetInflationGovernorResult, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
 	params := []any{}
-	if commitment != "" {
-		params = append(params,
-			M{"commitment": commitment},
-		)
+	if resolved.commitment != "" {
+		params = append(params, M{"commitment": resolved.commitment})
 	}
+
 	err = cl.rpcClient.CallForInto(ctx, &out, "getInflationGovernor", params)
 	return
 }

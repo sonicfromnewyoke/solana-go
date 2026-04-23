@@ -33,7 +33,7 @@ var getLatestBlockhashCmd = &cobra.Command{
 		client := getClient()
 		ctx := context.Background()
 
-		resp, err := client.GetLatestBlockhash(ctx, "")
+		resp, err := client.GetLatestBlockhash(ctx)
 		if err != nil {
 			return err
 		}

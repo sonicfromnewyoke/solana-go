@@ -18,24 +18,33 @@ import (
 	"context"
 )
 
-// GetFeeForMessage returns the fee the network will charge for a particular Message.
+// GetFeeForMessage returns the fee the network will charge for a particular
+// base64-encoded Message. Supported CallOptions: WithCommitment,
+// WithMinContextSlot.
 func (cl *Client) GetFeeForMessage(
 	ctx context.Context,
-	message string, // Base-64 encoded Message
-	commitment CommitmentType, // optional
+	message string,
+	calls ...CallOption,
 ) (out *GetFeeForMessageResult, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
-	params := []any{message}
-	if commitment != "" {
-		params = append(params, M{"commitment": commitment})
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
+	obj := M{}
+	if resolved.commitment != "" {
+		obj["commitment"] = resolved.commitment
 	}
+	if resolved.minContextSlot != nil {
+		obj["minContextSlot"] = *resolved.minContextSlot
+	}
+
+	params := []any{message}
+	if len(obj) > 0 {
+		params = append(params, obj)
+	}
+
 	err = cl.rpcClient.CallForInto(ctx, &out, "getFeeForMessage", params)
 	return
 }
 
-type GetFeeForMessageResult struct {
-	RPCContext
-
-	// Fee corresponding to the message at the specified blockhash.
-	Value *uint64 `json:"value"`
-}
+// GetFeeForMessageResult.Value is the fee corresponding to the message at
+// the specified blockhash.
+type GetFeeForMessageResult = RPCResponse[*uint64]

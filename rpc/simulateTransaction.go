@@ -24,10 +24,7 @@ import (
 	"github.com/gagliardetto/solana-go"
 )
 
-type SimulateTransactionResponse struct {
-	RPCContext
-	Value *SimulateTransactionResult `json:"value"`
-}
+type SimulateTransactionResponse = RPCResponse[*SimulateTransactionResult]
 
 type SimulateTransactionResult struct {
 	// Error if transaction failed, null if transaction succeeded.

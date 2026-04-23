@@ -30,7 +30,7 @@ func main() {
 	out, err := client.GetTokenLargestAccounts(
 		context.TODO(),
 		pubKey,
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)

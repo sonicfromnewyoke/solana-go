@@ -19,15 +19,26 @@ import (
 )
 
 // GetEpochInfo returns information about the current epoch.
+// Supported CallOptions: WithCommitment, WithMinContextSlot.
 func (cl *Client) GetEpochInfo(
 	ctx context.Context,
-	commitment CommitmentType, // optional
+	calls ...CallOption,
 ) (out *GetEpochInfoResult, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
-	params := []any{}
-	if commitment != "" {
-		params = append(params, M{"commitment": commitment})
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
+	obj := M{}
+	if resolved.commitment != "" {
+		obj["commitment"] = resolved.commitment
 	}
+	if resolved.minContextSlot != nil {
+		obj["minContextSlot"] = *resolved.minContextSlot
+	}
+
+	params := []any{}
+	if len(obj) > 0 {
+		params = append(params, obj)
+	}
+
 	err = cl.rpcClient.CallForInto(ctx, &out, "getEpochInfo", params)
 	return
 }

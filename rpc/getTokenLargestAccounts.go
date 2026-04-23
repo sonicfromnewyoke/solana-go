@@ -20,27 +20,25 @@ import (
 	"github.com/gagliardetto/solana-go"
 )
 
-// GetTokenLargestAccounts returns the 20 largest accounts of a particular SPL Token type.
+// GetTokenLargestAccounts returns the 20 largest accounts of a particular
+// SPL Token type. Supported CallOptions: WithCommitment.
 func (cl *Client) GetTokenLargestAccounts(
 	ctx context.Context,
-	tokenMint solana.PublicKey, // Pubkey of token Mint to query
-	commitment CommitmentType, // optional
+	tokenMint solana.PublicKey,
+	calls ...CallOption,
 ) (out *GetTokenLargestAccountsResult, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
 	params := []any{tokenMint}
-	if commitment != "" {
-		params = append(params,
-			M{"commitment": commitment},
-		)
+	if resolved.commitment != "" {
+		params = append(params, M{"commitment": resolved.commitment})
 	}
+
 	err = cl.rpcClient.CallForInto(ctx, &out, "getTokenLargestAccounts", params)
 	return
 }
 
-type GetTokenLargestAccountsResult struct {
-	RPCContext
-	Value []*TokenLargestAccountsResult `json:"value"`
-}
+type GetTokenLargestAccountsResult = RPCResponse[[]*TokenLargestAccountsResult]
 type TokenLargestAccountsResult struct {
 	Address solana.PublicKey `json:"address"` // the address of the token account
 	UiTokenAmount

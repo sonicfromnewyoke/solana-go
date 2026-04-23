@@ -23,24 +23,31 @@ import (
 )
 
 // GetLatestBlockhash returns the latest blockhash.
+// Supported CallOptions: WithCommitment, WithMinContextSlot.
 func (cl *Client) GetLatestBlockhash(
 	ctx context.Context,
-	commitment CommitmentType, // optional
+	calls ...CallOption,
 ) (out *GetLatestBlockhashResult, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
+	obj := M{}
+	if resolved.commitment != "" {
+		obj["commitment"] = resolved.commitment
+	}
+	if resolved.minContextSlot != nil {
+		obj["minContextSlot"] = *resolved.minContextSlot
+	}
+
 	params := []any{}
-	if commitment != "" {
-		params = append(params, M{"commitment": commitment})
+	if len(obj) > 0 {
+		params = append(params, obj)
 	}
 
 	err = cl.rpcClient.CallForInto(ctx, &out, "getLatestBlockhash", params)
 	return
 }
 
-type GetLatestBlockhashResult struct {
-	RPCContext
-	Value *LatestBlockhashResult `json:"value"`
-}
+type GetLatestBlockhashResult = RPCResponse[*LatestBlockhashResult]
 
 type LatestBlockhashResult struct {
 	Blockhash            solana.Hash `json:"blockhash"`

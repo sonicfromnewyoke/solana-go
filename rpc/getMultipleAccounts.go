@@ -21,10 +21,7 @@ import (
 	"github.com/gagliardetto/solana-go"
 )
 
-type GetMultipleAccountsResult struct {
-	RPCContext
-	Value []*Account `json:"value"`
-}
+type GetMultipleAccountsResult = RPCResponse[[]*Account]
 
 // GetMultipleAccounts returns the account information for a list of Pubkeys.
 func (cl *Client) GetMultipleAccounts(

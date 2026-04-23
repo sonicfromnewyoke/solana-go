@@ -21,23 +21,21 @@ import (
 )
 
 // GetTokenSupply returns the total supply of an SPL Token type.
+// Supported CallOptions: WithCommitment.
 func (cl *Client) GetTokenSupply(
 	ctx context.Context,
-	tokenMint solana.PublicKey, // Pubkey of token Mint to query
-	commitment CommitmentType, // optional
+	tokenMint solana.PublicKey,
+	calls ...CallOption,
 ) (out *GetTokenSupplyResult, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
 	params := []any{tokenMint}
-	if commitment != "" {
-		params = append(params,
-			M{"commitment": commitment},
-		)
+	if resolved.commitment != "" {
+		params = append(params, M{"commitment": resolved.commitment})
 	}
+
 	err = cl.rpcClient.CallForInto(ctx, &out, "getTokenSupply", params)
 	return
 }
 
-type GetTokenSupplyResult struct {
-	RPCContext
-	Value *UiTokenAmount `json:"value"`
-}
+type GetTokenSupplyResult = RPCResponse[*UiTokenAmount]

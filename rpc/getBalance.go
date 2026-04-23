@@ -23,19 +23,25 @@ import (
 )
 
 // GetBalance returns the balance of the account of provided publicKey.
+// Supported CallOptions: WithCommitment, WithMinContextSlot.
 func (cl *Client) GetBalance(
 	ctx context.Context,
-
-	// Pubkey of account to query. Required.
 	publicKey solana.PublicKey,
-
-	// Commitment requirement. Optional.
-	commitment CommitmentType,
+	calls ...CallOption,
 ) (out *GetBalanceResult, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
+	obj := M{}
+	if resolved.commitment != "" {
+		obj["commitment"] = resolved.commitment
+	}
+	if resolved.minContextSlot != nil {
+		obj["minContextSlot"] = *resolved.minContextSlot
+	}
+
 	params := []any{publicKey}
-	if commitment != "" {
-		params = append(params, M{"commitment": string(commitment)})
+	if len(obj) > 0 {
+		params = append(params, obj)
 	}
 
 	err = cl.rpcClient.CallForInto(ctx, &out, "getBalance", params)

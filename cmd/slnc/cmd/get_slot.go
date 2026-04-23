@@ -32,7 +32,7 @@ var getSlotCmd = &cobra.Command{
 		client := getClient()
 		ctx := context.Background()
 
-		resp, err := client.GetSlot(ctx, "")
+		resp, err := client.GetSlot(ctx)
 		if err != nil {
 			return err
 		}

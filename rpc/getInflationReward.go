@@ -26,17 +26,18 @@ type GetInflationRewardOpts struct {
 	// An epoch for which the reward occurs.
 	// If omitted, the previous epoch will be used.
 	Epoch *uint64
+
+	// The minimum slot that the request can be evaluated at.
+	MinContextSlot *uint64
 }
 
-// GetInflationReward returns the inflation / staking reward for a list of addresses for an epoch.
+// GetInflationReward returns the inflation / staking reward for a list of
+// addresses for an epoch.
 func (cl *Client) GetInflationReward(
 	ctx context.Context,
-
 	// An array of addresses to query.
 	addresses []solana.PublicKey,
-
 	opts *GetInflationRewardOpts,
-
 ) (out []*GetInflationRewardResult, err error) {
 	params := []any{addresses}
 
@@ -50,8 +51,13 @@ func (cl *Client) GetInflationReward(
 	if commitment != "" {
 		obj["commitment"] = commitment
 	}
-	if opts != nil && opts.Epoch != nil {
-		obj["epoch"] = opts.Epoch
+	if opts != nil {
+		if opts.Epoch != nil {
+			obj["epoch"] = opts.Epoch
+		}
+		if opts.MinContextSlot != nil {
+			obj["minContextSlot"] = *opts.MinContextSlot
+		}
 	}
 	if len(obj) > 0 {
 		params = append(params, obj)

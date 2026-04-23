@@ -51,10 +51,7 @@ func (cl *Client) GetSignatureStatuses(
 	return
 }
 
-type GetSignatureStatusesResult struct {
-	RPCContext
-	Value []*SignatureStatusesResult `json:"value"`
-}
+type GetSignatureStatusesResult = RPCResponse[[]*SignatureStatusesResult]
 
 type SignatureStatusesResult struct {
 	// The slot the transaction was processed.

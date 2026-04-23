@@ -29,7 +29,7 @@ func main() {
 	out, err := client.GetMinimumBalanceForRentExemption(
 		context.TODO(),
 		dataSize,
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)

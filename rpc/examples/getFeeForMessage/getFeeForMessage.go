@@ -28,7 +28,7 @@ func main() {
 	example, err := client.GetFeeForMessage(
 		context.Background(),
 		"AQABAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAA",
-		rpc.CommitmentProcessed,
+		rpc.WithCommitment(rpc.CommitmentProcessed),
 	)
 	if err != nil {
 		panic(err)

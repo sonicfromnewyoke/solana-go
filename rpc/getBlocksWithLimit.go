@@ -18,23 +18,25 @@ import (
 	"context"
 )
 
-// GetBlocksWithLimit returns a list of confirmed blocks starting at the given slot.
-// The result field will be an array of u64 integers listing
-// confirmed blocks starting at startSlot for up to limit blocks, inclusive.
+// GetBlocksWithLimit returns a list of confirmed blocks starting at the
+// given slot. The result is an array of u64 integers listing confirmed
+// blocks starting at startSlot for up to limit blocks.
+//
+// Supported CallOptions: WithCommitment. "processed" commitment is not
+// supported by this method.
 func (cl *Client) GetBlocksWithLimit(
 	ctx context.Context,
 	startSlot uint64,
 	limit uint64,
-	commitment CommitmentType, // optional; "processed" is not supported. If parameter not provided, the default is "finalized".
+	calls ...CallOption,
 ) (out *BlocksResult, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
 	params := []any{startSlot, limit}
-	if commitment != "" {
-		params = append(params,
-			// TODO: provide commitment as string instead of object?
-			M{"commitment": commitment},
-		)
+	if resolved.commitment != "" {
+		params = append(params, M{"commitment": resolved.commitment})
 	}
+
 	err = cl.rpcClient.CallForInto(ctx, &out, "getBlocksWithLimit", params)
 	return
 }

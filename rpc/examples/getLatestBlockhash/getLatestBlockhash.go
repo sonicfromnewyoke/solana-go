@@ -27,7 +27,7 @@ func main() {
 
 	example, err := client.GetLatestBlockhash(
 		context.Background(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)

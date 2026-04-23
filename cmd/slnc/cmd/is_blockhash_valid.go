@@ -31,7 +31,6 @@ var isBlockhashValidCmd = &cobra.Command{
 		resp, err := client.IsBlockhashValid(
 			cmd.Context(),
 			solana.MustHashFromBase58(args[0]),
-			"",
 		)
 		if err != nil {
 			return err

@@ -23,15 +23,22 @@ import (
 	"encoding/base64"
 	stdjson "encoding/json"
 	"fmt"
+	"io"
 	"math/big"
+	"net"
+	"net/http"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/AlekSi/pointer"
 	bin "github.com/gagliardetto/binary"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/time/rate"
 
 	"github.com/gagliardetto/solana-go"
+	"github.com/gagliardetto/solana-go/rpc/jsonrpc"
 )
 
 func TestClient_GetAccountInfo(t *testing.T) {
@@ -196,7 +203,7 @@ func TestClient_GetBalance(t *testing.T) {
 	out, err := client.GetBalance(
 		context.Background(),
 		pubKey,
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -236,7 +243,7 @@ func TestClient_ContextApiVersion(t *testing.T) {
 	client := New(server.URL)
 
 	pubKey := solana.MustPublicKeyFromBase58("7xLk17EQQ5KLDLDe44wCmupJKJjTGd8hs3eSVVhCx932")
-	out, err := client.GetBalance(context.Background(), pubKey, CommitmentFinalized)
+	out, err := client.GetBalance(context.Background(), pubKey, WithCommitment(CommitmentFinalized))
 	require.NoError(t, err)
 
 	assert.Equal(t, uint64(83987501), out.Context.Slot)
@@ -251,7 +258,7 @@ func TestClient_ContextApiVersion_Absent(t *testing.T) {
 	client := New(server.URL)
 
 	pubKey := solana.MustPublicKeyFromBase58("7xLk17EQQ5KLDLDe44wCmupJKJjTGd8hs3eSVVhCx932")
-	out, err := client.GetBalance(context.Background(), pubKey, CommitmentFinalized)
+	out, err := client.GetBalance(context.Background(), pubKey, WithCommitment(CommitmentFinalized))
 	require.NoError(t, err)
 
 	assert.Equal(t, uint64(83987501), out.Context.Slot)
@@ -587,7 +594,7 @@ func TestClient_GetBlockHeight(t *testing.T) {
 
 	out, err := client.GetBlockHeight(
 		context.Background(),
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -789,7 +796,7 @@ func TestClient_GetBlocks(t *testing.T) {
 		context.Background(),
 		uint64(startSlot),
 		&endSlot,
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -833,7 +840,7 @@ func TestClient_GetBlocksWithLimit(t *testing.T) {
 		context.Background(),
 		uint64(startSlot),
 		limit,
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -990,7 +997,7 @@ func TestClient_GetEpochInfo(t *testing.T) {
 
 	out, err := client.GetEpochInfo(
 		context.Background(),
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -1195,7 +1202,7 @@ func TestClient_GetInflationGovernor(t *testing.T) {
 
 	out, err := client.GetInflationGovernor(
 		context.Background(),
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -1658,7 +1665,7 @@ func TestClient_GetMinimumBalanceForRentExemption(t *testing.T) {
 	out, err := client.GetMinimumBalanceForRentExemption(
 		context.Background(),
 		dataSize,
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -2149,7 +2156,7 @@ func TestClient_GetSlot(t *testing.T) {
 
 	out, err := client.GetSlot(
 		context.Background(),
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -2187,7 +2194,7 @@ func TestClient_GetSlotLeader(t *testing.T) {
 
 	out, err := client.GetSlotLeader(
 		context.Background(),
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -2390,7 +2397,7 @@ func TestClient_GetTokenLargestAccounts(t *testing.T) {
 	out, err := client.GetTokenLargestAccounts(
 		context.Background(),
 		pubKey,
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -2433,7 +2440,7 @@ func TestClient_GetTokenSupply(t *testing.T) {
 	out, err := client.GetTokenSupply(
 		context.Background(),
 		pubKey,
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -2647,7 +2654,7 @@ func TestClient_GetTransactionCount(t *testing.T) {
 
 	out, err := client.GetTransactionCount(
 		context.Background(),
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -2961,7 +2968,7 @@ func TestClient_GetTokenAccountBalance(t *testing.T) {
 	out, err := client.GetTokenAccountBalance(
 		context.Background(),
 		pubKey,
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -3181,7 +3188,7 @@ func TestClient_IsBlockhashValid(t *testing.T) {
 	out, err := client.IsBlockhashValid(
 		context.Background(),
 		blockhash,
-		CommitmentFinalized,
+		WithCommitment(CommitmentFinalized),
 	)
 	require.NoError(t, err)
 
@@ -3384,7 +3391,7 @@ func TestClient_GetFeeForMessage(t *testing.T) {
 	out, err := client.GetFeeForMessage(
 		context.Background(),
 		"AQABAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAA",
-		CommitmentProcessed,
+		WithCommitment(CommitmentProcessed),
 	)
 	require.NoError(t, err)
 
@@ -3455,7 +3462,7 @@ func TestClient_GetLatestBlockhash(t *testing.T) {
 
 	out, err := client.GetLatestBlockhash(
 		context.Background(),
-		CommitmentProcessed,
+		WithCommitment(CommitmentProcessed),
 	)
 	require.NoError(t, err)
 
@@ -3528,4 +3535,640 @@ func TestClient_GetRecentPrioritizationFees(t *testing.T) {
 	got := mustJSONToInterface(mustAnyToJSON(out))
 
 	assert.Equal(t, expected, got, "both deserialized values must be equal")
+}
+
+// =============================================================================
+// NewClient functional options
+// =============================================================================
+
+func TestNewClient_NoOptionsUsesDefaults(t *testing.T) {
+	cl := NewClient("http://localhost:0")
+	assert.Equal(t, CommitmentFinalized, cl.Commitment())
+}
+
+func TestNewClient_WithCommitment(t *testing.T) {
+	cl := NewClient("http://localhost:0", WithCommitment(CommitmentProcessed))
+	assert.Equal(t, CommitmentProcessed, cl.Commitment())
+}
+
+func TestNewClient_WithCommitmentEmptyPreservesDefault(t *testing.T) {
+	cl := NewClient("http://localhost:0", WithCommitment(""))
+	assert.Equal(t, CommitmentFinalized, cl.Commitment())
+}
+
+func TestNewClient_LastOptionWins(t *testing.T) {
+	cl := NewClient("http://localhost:0",
+		WithCommitment(CommitmentProcessed),
+		WithCommitment(CommitmentConfirmed),
+	)
+	assert.Equal(t, CommitmentConfirmed, cl.Commitment())
+}
+
+func TestNewClient_WithTimeoutAppliesToHTTPClient(t *testing.T) {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = ln.Close() })
+
+	go func() {
+		for {
+			conn, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			go func(c net.Conn) {
+				defer c.Close()
+				io.Copy(io.Discard, c)
+			}(conn)
+		}
+	}()
+
+	cl := NewClient("http://"+ln.Addr().String(), WithTimeout(50*time.Millisecond))
+	start := time.Now()
+	_, err = cl.GetSlot(context.Background(), WithCommitment(CommitmentFinalized))
+	require.Error(t, err)
+	assert.Less(t, time.Since(start), 2*time.Second)
+}
+
+func TestNewClient_WithHTTPClientOverridesTimeout(t *testing.T) {
+	// Custom http.Client with its own (loose) timeout; WithTimeout should be
+	// ignored. We can't easily observe this directly without reflection, so
+	// verify the observable part: the custom client is actually used by
+	// watching for a distinctive User-Agent we set on our transport.
+	var recorded string
+	srv := &http.Server{
+		Handler: http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			recorded = req.Header.Get("User-Agent")
+			rw.Write([]byte(`{"jsonrpc":"2.0","result":0,"id":1}`))
+		}),
+	}
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	go srv.Serve(ln)
+	t.Cleanup(func() {
+		_ = srv.Close()
+		_ = ln.Close()
+	})
+
+	customTransport := &uaTransport{base: http.DefaultTransport, ua: "test-ua"}
+	customClient := &http.Client{Transport: customTransport, Timeout: 10 * time.Second}
+
+	cl := NewClient("http://"+ln.Addr().String(),
+		WithHTTPClient(customClient),
+		WithTimeout(1*time.Millisecond), // should be ignored
+	)
+	_, err = cl.GetSlot(context.Background(), WithCommitment(CommitmentFinalized))
+	require.NoError(t, err)
+	assert.Equal(t, "test-ua", recorded, "custom http.Client transport should be used")
+}
+
+func TestNewClient_WithHeadersSendsHeaders(t *testing.T) {
+	var seen http.Header
+	srv := &http.Server{
+		Handler: http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			seen = req.Header.Clone()
+			rw.Write([]byte(`{"jsonrpc":"2.0","result":0,"id":1}`))
+		}),
+	}
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	go srv.Serve(ln)
+	t.Cleanup(func() {
+		_ = srv.Close()
+		_ = ln.Close()
+	})
+
+	cl := NewClient("http://"+ln.Addr().String(),
+		WithHeaders(map[string]string{"X-Test-Header": "abc123"}),
+	)
+	_, err = cl.GetSlot(context.Background(), WithCommitment(CommitmentFinalized))
+	require.NoError(t, err)
+	assert.Equal(t, "abc123", seen.Get("X-Test-Header"))
+}
+
+func TestNewClient_Combined(t *testing.T) {
+	cl := NewClient("http://localhost:0",
+		WithTimeout(30*time.Second),
+		WithCommitment(CommitmentConfirmed),
+		WithHeaders(map[string]string{"X-Foo": "bar"}),
+	)
+	assert.Equal(t, CommitmentConfirmed, cl.Commitment())
+}
+
+// =============================================================================
+// Rate-limit middleware
+// =============================================================================
+
+// TestNewClient_WithRateLimit_ThrottlesCalls verifies that requests past the
+// configured RPS are delayed. 3 requests at 2 rps should take at least 1s.
+func TestNewClient_WithRateLimit_ThrottlesCalls(t *testing.T) {
+	var hits int32
+	srv := &http.Server{
+		Handler: http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
+			atomic.AddInt32(&hits, 1)
+			rw.Write([]byte(`{"jsonrpc":"2.0","result":0,"id":1}`))
+		}),
+	}
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	go srv.Serve(ln)
+	t.Cleanup(func() {
+		_ = srv.Close()
+		_ = ln.Close()
+	})
+
+	cl := NewClient("http://"+ln.Addr().String(), WithRateLimit(2))
+
+	start := time.Now()
+	for i := 0; i < 3; i++ {
+		_, err := cl.GetSlot(context.Background(), WithCommitment(CommitmentFinalized))
+		require.NoError(t, err)
+	}
+	elapsed := time.Since(start)
+
+	assert.EqualValues(t, 3, atomic.LoadInt32(&hits))
+	assert.GreaterOrEqual(t, elapsed, 900*time.Millisecond,
+		"3 requests at 2 rps should take at least ~1s, took %s", elapsed)
+}
+
+// TestNewClient_WithLimiter_HonorsContext verifies that the token-bucket
+// limiter aborts on context cancellation rather than blocking forever.
+func TestNewClient_WithLimiter_HonorsContext(t *testing.T) {
+	srv := &http.Server{
+		Handler: http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
+			rw.Write([]byte(`{"jsonrpc":"2.0","result":0,"id":1}`))
+		}),
+	}
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	go srv.Serve(ln)
+	t.Cleanup(func() {
+		_ = srv.Close()
+		_ = ln.Close()
+	})
+
+	// 1 token, refilled every hour — second call will have to wait ~forever
+	// unless ctx is canceled.
+	cl := NewClient("http://"+ln.Addr().String(), WithLimiter(rate.Every(time.Hour), 1))
+
+	// First call consumes the only token.
+	_, err = cl.GetSlot(context.Background(), WithCommitment(CommitmentFinalized))
+	require.NoError(t, err)
+
+	// Second call should time out via ctx.
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	start := time.Now()
+	_, err = cl.GetSlot(ctx, WithCommitment(CommitmentFinalized))
+	elapsed := time.Since(start)
+
+	require.Error(t, err, "expected context-deadline error")
+	assert.Less(t, elapsed, time.Second, "limiter should have returned promptly on ctx timeout")
+}
+
+// TestNewClient_WithRateLimit_AppliesToCustomRPCClient verifies that
+// WithRateLimit passed through NewWithCustomRPCClient wraps the supplied
+// client, proving the middleware path works independently of HTTP config.
+func TestNewClient_WithRateLimit_AppliesToCustomRPCClient(t *testing.T) {
+	counting := &countingRPCClient{}
+	cl := NewWithCustomRPCClient(counting, WithRateLimit(1000))
+
+	// Make a call and verify it went through the wrapped client.
+	require.NoError(t, cl.rpcClient.CallForInto(context.Background(), nil, "noop", nil))
+	assert.EqualValues(t, 1, atomic.LoadInt32(&counting.calls))
+	// The wrapper should be a rate-limiting middleware, not the raw counting client.
+	_, isWrapped := cl.rpcClient.(*clientWithRateLimiting)
+	assert.True(t, isWrapped, "expected rate-limit wrapper, got %T", cl.rpcClient)
+}
+
+// =============================================================================
+// Legacy constructors
+// =============================================================================
+
+func TestNew_DefaultsToFinalized(t *testing.T) {
+	cl := New("http://localhost:0")
+	assert.Equal(t, CommitmentFinalized, cl.Commitment())
+}
+
+func TestNewWithCommitment_StoresCommitment(t *testing.T) {
+	cl := NewWithCommitment("http://localhost:0", CommitmentProcessed)
+	assert.Equal(t, CommitmentProcessed, cl.Commitment())
+}
+
+func TestNewWithCommitment_EmptyFallsBackToFinalized(t *testing.T) {
+	cl := NewWithCommitment("http://localhost:0", "")
+	assert.Equal(t, CommitmentFinalized, cl.Commitment())
+}
+
+func TestNewWithTimeout_DefaultsToFinalized(t *testing.T) {
+	cl := NewWithTimeout("http://localhost:0", 5*time.Second)
+	assert.Equal(t, CommitmentFinalized, cl.Commitment())
+}
+
+func TestNewWithTimeoutAndCommitment_StoresCommitment(t *testing.T) {
+	cl := NewWithTimeoutAndCommitment("http://localhost:0", 5*time.Second, CommitmentConfirmed)
+	assert.Equal(t, CommitmentConfirmed, cl.Commitment())
+}
+
+func TestNewWithCustomRPCClient_DefaultsToFinalized(t *testing.T) {
+	cl := NewWithCustomRPCClient(&nopJSONRPC{})
+	assert.Equal(t, CommitmentFinalized, cl.Commitment())
+}
+
+func TestNewWithCustomRPCClientAndCommitment_StoresCommitment(t *testing.T) {
+	cl := NewWithCustomRPCClientAndCommitment(&nopJSONRPC{}, CommitmentProcessed)
+	assert.Equal(t, CommitmentProcessed, cl.Commitment())
+}
+
+func TestNewWithHeaders_DefaultsToFinalized(t *testing.T) {
+	cl := NewWithHeaders("http://localhost:0", map[string]string{"X-Foo": "bar"})
+	assert.Equal(t, CommitmentFinalized, cl.Commitment())
+}
+
+// TestNewWithTimeout_AppliesTimeout verifies the HTTP timeout is actually
+// wired into the underlying http.Client. We open a raw TCP listener that
+// accepts the connection but never writes a response, so the only way the
+// call returns is via the http.Client.Timeout firing.
+func TestNewWithTimeout_AppliesTimeout(t *testing.T) {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = ln.Close() })
+
+	go func() {
+		for {
+			conn, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			// Hold the connection open; closing the listener will end the
+			// test and let these goroutines exit.
+			go func(c net.Conn) {
+				defer c.Close()
+				io.Copy(io.Discard, c)
+			}(conn)
+		}
+	}()
+
+	cl := NewWithTimeout("http://"+ln.Addr().String(), 50*time.Millisecond)
+	start := time.Now()
+	_, err = cl.GetSlot(context.Background(), WithCommitment(CommitmentFinalized))
+	elapsed := time.Since(start)
+
+	require.Error(t, err, "expected a timeout error")
+	assert.Less(t, elapsed, 2*time.Second, "timeout did not fire at the configured 50ms, took %s", elapsed)
+}
+
+// =============================================================================
+// Commitment fallback
+// =============================================================================
+
+// Positional argument -------------------------------------------------------
+
+func TestCommitmentFallback_PositionalExplicitWins(t *testing.T) {
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(`0`)))
+	defer closer()
+
+	cl := NewWithCommitment(server.URL, CommitmentFinalized)
+	_, err := cl.GetSlot(context.Background(), WithCommitment(CommitmentProcessed))
+	require.NoError(t, err)
+
+	assertCommitment(t, server, "processed")
+}
+
+func TestCommitmentFallback_PositionalEmptyUsesClientDefault(t *testing.T) {
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(`0`)))
+	defer closer()
+
+	cl := NewWithCommitment(server.URL, CommitmentConfirmed)
+	_, err := cl.GetSlot(context.Background())
+	require.NoError(t, err)
+
+	assertCommitment(t, server, "confirmed")
+}
+
+func TestCommitmentFallback_DefaultNewIsFinalized(t *testing.T) {
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(`0`)))
+	defer closer()
+
+	cl := New(server.URL)
+	_, err := cl.GetSlot(context.Background())
+	require.NoError(t, err)
+
+	assertCommitment(t, server, "finalized")
+}
+
+// Opts struct --------------------------------------------------------------
+
+func TestCommitmentFallback_OptsNilUsesClientDefault(t *testing.T) {
+	responseBody := `{"blockhash":"5M77sHdwzH6rckuQwF8HL1w52n7hjrh4GVTFiF6T8QyB","previousBlockhash":"Aq9jSXe1jRzfiaBcRFLe4wm7j499vWVEeFQrq5nnXfZN","parentSlot":0,"rewards":[]}`
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(responseBody)))
+	defer closer()
+
+	cl := NewWithCommitment(server.URL, CommitmentConfirmed)
+	_, err := cl.GetBlockWithOpts(context.Background(), 42, nil)
+	require.NoError(t, err)
+
+	assertCommitment(t, server, "confirmed")
+}
+
+func TestCommitmentFallback_OptsEmptyUsesClientDefault(t *testing.T) {
+	responseBody := `{"blockhash":"5M77sHdwzH6rckuQwF8HL1w52n7hjrh4GVTFiF6T8QyB","previousBlockhash":"Aq9jSXe1jRzfiaBcRFLe4wm7j499vWVEeFQrq5nnXfZN","parentSlot":0,"rewards":[]}`
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(responseBody)))
+	defer closer()
+
+	cl := NewWithCommitment(server.URL, CommitmentProcessed)
+	_, err := cl.GetBlockWithOpts(context.Background(), 42, &GetBlockOpts{})
+	require.NoError(t, err)
+
+	assertCommitment(t, server, "processed")
+}
+
+func TestCommitmentFallback_OptsExplicitWins(t *testing.T) {
+	responseBody := `{"blockhash":"5M77sHdwzH6rckuQwF8HL1w52n7hjrh4GVTFiF6T8QyB","previousBlockhash":"Aq9jSXe1jRzfiaBcRFLe4wm7j499vWVEeFQrq5nnXfZN","parentSlot":0,"rewards":[]}`
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(responseBody)))
+	defer closer()
+
+	cl := NewWithCommitment(server.URL, CommitmentFinalized)
+	_, err := cl.GetBlockWithOpts(context.Background(), 42, &GetBlockOpts{Commitment: CommitmentProcessed})
+	require.NoError(t, err)
+
+	assertCommitment(t, server, "processed")
+}
+
+// sendTransaction preflight ------------------------------------------------
+
+func TestCommitmentFallback_SendTransactionPreflightUsesClientDefault(t *testing.T) {
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(`"1111111111111111111111111111111111111111111111111111111111111111"`)))
+	defer closer()
+
+	cl := NewWithCommitment(server.URL, CommitmentConfirmed)
+	_, err := cl.SendEncodedTransactionWithOpts(context.Background(), "ignored", TransactionOpts{})
+	require.NoError(t, err)
+
+	obj := extractParamsObj(t, server, 1)
+	assert.Equal(t, "confirmed", obj["preflightCommitment"], "expected client default on preflightCommitment")
+}
+
+func TestCommitmentFallback_SendTransactionPreflightExplicitWins(t *testing.T) {
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(`"1111111111111111111111111111111111111111111111111111111111111111"`)))
+	defer closer()
+
+	cl := NewWithCommitment(server.URL, CommitmentFinalized)
+	_, err := cl.SendEncodedTransactionWithOpts(context.Background(), "ignored", TransactionOpts{PreflightCommitment: CommitmentProcessed})
+	require.NoError(t, err)
+
+	obj := extractParamsObj(t, server, 1)
+	assert.Equal(t, "processed", obj["preflightCommitment"], "explicit preflight should win")
+}
+
+// =============================================================================
+// CallOption migration
+// =============================================================================
+
+// MinContextSlot wiring -----------------------------------------------------
+
+// TestCallOption_WithMinContextSlotWired verifies the WithMinContextSlot
+// CallOption flows into the wire params. Representative across methods that
+// accept minContextSlot.
+func TestCallOption_WithMinContextSlotWired(t *testing.T) {
+	t.Parallel()
+
+	t.Run("GetBalance", func(t *testing.T) {
+		t.Parallel()
+		server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(
+			`{"context":{"slot":1},"value":0}`,
+		)))
+		defer closer()
+
+		cl := New(server.URL)
+		_, err := cl.GetBalance(context.Background(), solana.PublicKey{}, WithMinContextSlot(12345))
+		require.NoError(t, err)
+
+		obj := extractParamsObj(t, server, 1)
+		assert.EqualValues(t, 12345, obj["minContextSlot"])
+	})
+
+	t.Run("GetSlot", func(t *testing.T) {
+		t.Parallel()
+		server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(`0`)))
+		defer closer()
+
+		cl := New(server.URL)
+		_, err := cl.GetSlot(context.Background(), WithMinContextSlot(98765))
+		require.NoError(t, err)
+
+		obj := extractParamsObj(t, server, 0)
+		assert.EqualValues(t, 98765, obj["minContextSlot"])
+	})
+
+	t.Run("GetLatestBlockhash", func(t *testing.T) {
+		t.Parallel()
+		server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(
+			`{"context":{"slot":1},"value":{"blockhash":"5M77sHdwzH6rckuQwF8HL1w52n7hjrh4GVTFiF6T8QyB","lastValidBlockHeight":1}}`,
+		)))
+		defer closer()
+
+		cl := New(server.URL)
+		_, err := cl.GetLatestBlockhash(context.Background(), WithMinContextSlot(54321))
+		require.NoError(t, err)
+
+		obj := extractParamsObj(t, server, 0)
+		assert.EqualValues(t, 54321, obj["minContextSlot"])
+	})
+}
+
+// WithCommitment at both client and call layers -----------------------------
+
+// TestCallOption_WithCommitmentOverridesClientDefault: the same WithCommitment
+// passed to NewClient (which sets the default) overrides the default when
+// passed to an RPC method.
+func TestCallOption_WithCommitmentOverridesClientDefault(t *testing.T) {
+	t.Parallel()
+
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(
+		`{"context":{"slot":1},"value":0}`,
+	)))
+	defer closer()
+
+	cl := NewClient(server.URL, WithCommitment(CommitmentFinalized))
+	_, err := cl.GetBalance(context.Background(), solana.PublicKey{}, WithCommitment(CommitmentProcessed))
+	require.NoError(t, err)
+
+	assertCommitment(t, server, "processed")
+}
+
+// TestCallOption_LastWithCommitmentWins: later CallOptions override earlier
+// ones when multiple are passed to the same call.
+func TestCallOption_LastWithCommitmentWins(t *testing.T) {
+	t.Parallel()
+
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(
+		`{"context":{"slot":1},"value":0}`,
+	)))
+	defer closer()
+
+	cl := NewClient(server.URL, WithCommitment(CommitmentFinalized))
+	_, err := cl.GetBalance(context.Background(), solana.PublicKey{},
+		WithCommitment(CommitmentConfirmed),
+		WithCommitment(CommitmentProcessed),
+	)
+	require.NoError(t, err)
+
+	assertCommitment(t, server, "processed")
+}
+
+// TestCallOption_NoCallOptionFallsBackToClientDefault: when no CallOption is
+// passed, the client default is used.
+func TestCallOption_NoCallOptionFallsBackToClientDefault(t *testing.T) {
+	t.Parallel()
+
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(
+		`{"context":{"slot":1},"value":0}`,
+	)))
+	defer closer()
+
+	cl := NewClient(server.URL, WithCommitment(CommitmentConfirmed))
+	_, err := cl.GetBalance(context.Background(), solana.PublicKey{})
+	require.NoError(t, err)
+
+	assertCommitment(t, server, "confirmed")
+}
+
+// TestCallOption_InterfaceGuards statically asserts the compile-time
+// contract: dualOption satisfies both Option and CallOption;
+// clientOnlyOption satisfies only Option.
+func TestCallOption_InterfaceGuards(t *testing.T) {
+	t.Parallel()
+
+	// dualOption: Option + CallOption.
+	var _ Option = WithCommitment(CommitmentFinalized)
+	var _ CallOption = WithCommitment(CommitmentFinalized)
+	var _ Option = WithMinContextSlot(0)
+	var _ CallOption = WithMinContextSlot(0)
+
+	// clientOnlyOption: Option only. Uncommenting the CallOption line below
+	// should fail to compile — that compile-time rejection is the whole point
+	// of the split between Option and CallOption.
+	var _ Option = WithTimeout(time.Second)
+	var _ Option = WithHeaders(nil)
+	var _ Option = WithHTTPClient(nil)
+	var _ Option = WithRateLimit(1)
+	var _ Option = WithLimiter(rate.Every(time.Second), 1)
+	// var _ CallOption = WithTimeout(time.Second) // compile error, by design.
+}
+
+// TestCallOption_WithMinContextSlotOverridesClientDefault: per-call override
+// beats the client-wide floor set at construction.
+func TestCallOption_WithMinContextSlotOverridesClientDefault(t *testing.T) {
+	t.Parallel()
+
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(
+		`{"context":{"slot":1},"value":0}`,
+	)))
+	defer closer()
+
+	cl := NewClient(server.URL, WithMinContextSlot(100))
+	_, err := cl.GetBalance(context.Background(), solana.PublicKey{}, WithMinContextSlot(500))
+	require.NoError(t, err)
+
+	obj := extractParamsObj(t, server, 1)
+	assert.EqualValues(t, 500, obj["minContextSlot"])
+}
+
+// TestClient_WithMinContextSlotSetsDefault verifies NewClient stores the
+// MinContextSlot default (used by every method that supports it).
+func TestClient_WithMinContextSlotSetsDefault(t *testing.T) {
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(
+		`{"context":{"slot":1},"value":0}`,
+	)))
+	defer closer()
+
+	cl := NewClient(server.URL, WithMinContextSlot(42))
+	_, err := cl.GetBalance(context.Background(), solana.PublicKey{})
+	require.NoError(t, err)
+
+	obj := extractParamsObj(t, server, 1)
+	assert.EqualValues(t, 42, obj["minContextSlot"])
+}
+
+// =============================================================================
+// Test helpers
+// =============================================================================
+
+// nopJSONRPC is a stub JSONRPCClient used for constructor tests that never
+// actually dispatch a request.
+type nopJSONRPC struct{}
+
+func (nopJSONRPC) CallForInto(context.Context, any, string, []any) error { return nil }
+func (nopJSONRPC) CallWithCallback(context.Context, string, []any, func(*http.Request, *http.Response) error) error {
+	return nil
+}
+func (nopJSONRPC) CallBatch(context.Context, jsonrpc.RPCRequests) (jsonrpc.RPCResponses, error) {
+	return nil, nil
+}
+
+// countingRPCClient records how many calls it has served, used to verify
+// middleware forwarding in tests.
+type countingRPCClient struct{ calls int32 }
+
+func (c *countingRPCClient) CallForInto(context.Context, any, string, []any) error {
+	atomic.AddInt32(&c.calls, 1)
+	return nil
+}
+
+func (c *countingRPCClient) CallWithCallback(context.Context, string, []any, func(*http.Request, *http.Response) error) error {
+	atomic.AddInt32(&c.calls, 1)
+	return nil
+}
+
+func (c *countingRPCClient) CallBatch(context.Context, jsonrpc.RPCRequests) (jsonrpc.RPCResponses, error) {
+	atomic.AddInt32(&c.calls, 1)
+	return nil, nil
+}
+
+// extractParamsObj returns the options object at params[idx] from the last
+// recorded JSON-RPC request body.
+func extractParamsObj(t *testing.T, server *mockJSONRPCServer, idx int) map[string]any {
+	t.Helper()
+	body := server.RequestBody(t)
+	params, ok := body["params"].([]any)
+	require.True(t, ok, "params is not a slice: %T", body["params"])
+	require.Greater(t, len(params), idx, "params too short: %v", params)
+	obj, ok := params[idx].(map[string]any)
+	require.True(t, ok, "params[%d] is not an object: %T", idx, params[idx])
+	return obj
+}
+
+// assertCommitment asserts that the last recorded JSON-RPC request carries
+// the given commitment in its trailing options object. It searches params
+// in reverse to accommodate methods that pass other arguments first.
+func assertCommitment(t *testing.T, server *mockJSONRPCServer, want string) {
+	t.Helper()
+	body := server.RequestBody(t)
+	params, ok := body["params"].([]any)
+	require.True(t, ok, "params is not a slice: %T", body["params"])
+	for i := len(params) - 1; i >= 0; i-- {
+		obj, ok := params[i].(map[string]any)
+		if !ok {
+			continue
+		}
+		if got, present := obj["commitment"]; present {
+			assert.Equal(t, want, got)
+			return
+		}
+	}
+	t.Fatalf("commitment not found in params: %v", params)
+}
+
+// uaTransport is a thin http.RoundTripper that injects a fixed User-Agent
+// header; used to prove that WithHTTPClient actually replaces the default
+// transport.
+type uaTransport struct {
+	base http.RoundTripper
+	ua   string
+}
+
+func (t *uaTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req = req.Clone(req.Context())
+	req.Header.Set("User-Agent", t.ua)
+	return t.base.RoundTrip(req)
 }

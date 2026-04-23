@@ -96,7 +96,7 @@ func ExampleClient_GetBalance() {
 	out, err := client.GetBalance(
 		context.TODO(),
 		pubKey,
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -116,7 +116,7 @@ func ExampleClient_GetBlock() {
 	endpoint := rpc.TestNet_RPC
 	client := rpc.New(endpoint)
 
-	example, err := client.GetLatestBlockhash(context.TODO(), rpc.CommitmentFinalized)
+	example, err := client.GetLatestBlockhash(context.TODO(), rpc.WithCommitment(rpc.CommitmentFinalized))
 	if err != nil {
 		panic(err)
 	}
@@ -156,7 +156,7 @@ func ExampleClient_GetBlockCommitment() {
 	endpoint := rpc.TestNet_RPC
 	client := rpc.New(endpoint)
 
-	example, err := client.GetLatestBlockhash(context.TODO(), rpc.CommitmentFinalized)
+	example, err := client.GetLatestBlockhash(context.TODO(), rpc.WithCommitment(rpc.CommitmentFinalized))
 	if err != nil {
 		panic(err)
 	}
@@ -177,7 +177,7 @@ func ExampleClient_GetBlockHeight() {
 
 	out, err := client.GetBlockHeight(
 		context.TODO(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -216,7 +216,7 @@ func ExampleClient_GetBlockTime() {
 
 	example, err := client.GetLatestBlockhash(
 		context.TODO(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -239,7 +239,7 @@ func ExampleClient_GetBlocks() {
 
 	example, err := client.GetLatestBlockhash(
 		context.TODO(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -250,7 +250,7 @@ func ExampleClient_GetBlocks() {
 		context.TODO(),
 		uint64(example.Context.Slot-3),
 		&endSlot,
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -264,7 +264,7 @@ func ExampleClient_GetBlocksWithLimit() {
 
 	example, err := client.GetLatestBlockhash(
 		context.TODO(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -275,7 +275,7 @@ func ExampleClient_GetBlocksWithLimit() {
 		context.TODO(),
 		uint64(example.Context.Slot-10),
 		limit,
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -302,7 +302,7 @@ func ExampleClient_GetEpochInfo() {
 
 	out, err := client.GetEpochInfo(
 		context.TODO(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -330,7 +330,7 @@ func ExampleClient_GetFeeForMessage() {
 	example, err := client.GetFeeForMessage(
 		context.Background(),
 		"AQABAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAA",
-		rpc.CommitmentProcessed,
+		rpc.WithCommitment(rpc.CommitmentProcessed),
 	)
 	if err != nil {
 		panic(err)
@@ -397,7 +397,7 @@ func ExampleClient_GetLatestBlockhash() {
 
 	example, err := client.GetLatestBlockhash(
 		context.Background(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -424,7 +424,7 @@ func ExampleClient_GetInflationGovernor() {
 
 	out, err := client.GetInflationGovernor(
 		context.TODO(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -528,7 +528,7 @@ func ExampleClient_GetMinimumBalanceForRentExemption() {
 	out, err := client.GetMinimumBalanceForRentExemption(
 		context.TODO(),
 		dataSize,
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -652,7 +652,7 @@ func ExampleClient_GetSlot() {
 
 	out, err := client.GetSlot(
 		context.TODO(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -666,7 +666,7 @@ func ExampleClient_GetSlotLeader() {
 
 	out, err := client.GetSlotLeader(
 		context.TODO(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -680,7 +680,7 @@ func ExampleClient_GetSlotLeaders() {
 
 	recent, err := client.GetLatestBlockhash(
 		context.TODO(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -703,7 +703,7 @@ func ExampleClient_GetStakeMinimumDelegation() {
 
 	out, err := client.GetStakeMinimumDelegation(
 		context.TODO(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -733,7 +733,7 @@ func ExampleClient_GetTokenAccountBalance() {
 	out, err := client.GetTokenAccountBalance(
 		context.TODO(),
 		pubKey,
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -805,7 +805,7 @@ func ExampleClient_GetTokenLargestAccounts() {
 	out, err := client.GetTokenLargestAccounts(
 		context.TODO(),
 		pubKey,
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -821,7 +821,7 @@ func ExampleClient_GetTokenSupply() {
 	out, err := client.GetTokenSupply(
 		context.TODO(),
 		pubKey,
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -879,7 +879,7 @@ func ExampleClient_GetTransactionCount() {
 
 	out, err := client.GetTransactionCount(
 		context.TODO(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -924,7 +924,7 @@ func ExampleClient_IsBlockhashValid() {
 	out, err := client.IsBlockhashValid(
 		context.TODO(),
 		blockHash,
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)

@@ -21,23 +21,21 @@ import (
 )
 
 // GetTokenAccountBalance returns the token balance of an SPL Token account.
+// Supported CallOptions: WithCommitment.
 func (cl *Client) GetTokenAccountBalance(
 	ctx context.Context,
 	account solana.PublicKey,
-	commitment CommitmentType, // optional
+	calls ...CallOption,
 ) (out *GetTokenAccountBalanceResult, err error) {
-	commitment = cl.commitmentOrDefault(commitment)
+	resolved := cl.resolveCallConfig(callConfig{}, calls)
+
 	params := []any{account}
-	if commitment != "" {
-		params = append(params,
-			M{"commitment": commitment},
-		)
+	if resolved.commitment != "" {
+		params = append(params, M{"commitment": resolved.commitment})
 	}
+
 	err = cl.rpcClient.CallForInto(ctx, &out, "getTokenAccountBalance", params)
 	return
 }
 
-type GetTokenAccountBalanceResult struct {
-	RPCContext
-	Value *UiTokenAmount `json:"value"`
-}
+type GetTokenAccountBalanceResult = RPCResponse[*UiTokenAmount]

@@ -27,7 +27,7 @@ func main() {
 
 	slot, err := client.GetSlot(
 		context.TODO(),
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
@@ -38,7 +38,7 @@ func main() {
 		context.TODO(),
 		slot-10,
 		limit,
-		rpc.CommitmentFinalized,
+		rpc.WithCommitment(rpc.CommitmentFinalized),
 	)
 	if err != nil {
 		panic(err)
