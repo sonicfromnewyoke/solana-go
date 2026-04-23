@@ -633,8 +633,7 @@ func TestEncoder_BinaryTestStructWithTags(t *testing.T) {
 }
 
 func TestEncoder_InterfaceNil(t *testing.T) {
-	var foo interface{}
-	foo = nil
+	var foo interface{} = nil
 	buf := new(bytes.Buffer)
 	enc := NewBinEncoder(buf)
 	err := enc.Encode(foo)

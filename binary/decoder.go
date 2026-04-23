@@ -1129,11 +1129,8 @@ func init() {
 }
 
 var (
-	typeOfByte   = reflect.TypeOf(byte(0))
-	typeOfUint8  = reflect.TypeOf(uint8(0))
-	typeOfUint16 = reflect.TypeOf(uint16(0))
-	typeOfUint32 = reflect.TypeOf(uint32(0))
-	typeOfUint64 = reflect.TypeOf(uint64(0))
+	typeOfByte  = reflect.TypeOf(byte(0))
+	typeOfUint8 = reflect.TypeOf(uint8(0))
 )
 
 func reflect_readArrayOfUint64(d *Decoder, l int, rv reflect.Value, order binary.ByteOrder) error {

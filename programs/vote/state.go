@@ -18,8 +18,8 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	bin "github.com/gagliardetto/solana-go/binary"
 	"github.com/gagliardetto/solana-go"
+	bin "github.com/gagliardetto/solana-go/binary"
 )
 
 // VoteStateVersion identifies which version of VoteState is stored.

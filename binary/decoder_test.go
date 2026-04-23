@@ -563,6 +563,7 @@ func TestDecoder_ByteArray(t *testing.T) {
 	assert.Equal(t, 4, d.Remaining())
 
 	data, err = d.ReadByteSlice()
+	assert.NoError(t, err)
 	assert.Equal(t, []byte{4, 5, 6}, data)
 	assert.Equal(t, 0, d.Remaining())
 }

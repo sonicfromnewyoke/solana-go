@@ -55,7 +55,7 @@ primitive-heavy workloads.
 
 ## HEAD-only (new capabilities)
 
-Benchmarks for APIs introduced by techniques #2, #4, #7. No baseline
+Benchmarks for APIs introduced by techniques #2, #4, #5, #7. No baseline
 exists on the initial commit. Reported for reference and as the reason
 the small primitive regressions are acceptable.
 
@@ -70,6 +70,12 @@ the small primitive regressions are acceptable.
 | TxHeader_Raw                      | 13.46     | 0     | 0         | (hand-rolled lower bound) |
 | Cursor_8xU64LE                    | 4.14      | 0     | 0         | #4 Cursor |
 | Encoder_8xU64LE                   | 48.69     | 112   | 1         | (baseline) |
+| MarshalPOD_Pubkey (32 B)          | 0.25      | 0     | 0         | #5 MarshalPOD |
+| MarshalBorshInto_Pubkey           | 57.96     | 0     | 0         | (baseline for MarshalPOD) |
+| MarshalPOD_BigStruct (8 x u64)    | 0.25      | 0     | 0         | #5 MarshalPOD |
+| MarshalBorshInto_BigStruct        | 117.7     | 0     | 0         | (baseline) |
+| UnmarshalPOD_BigStruct            | 0.76      | 0     | 0         | #5 UnmarshalPOD |
+| UnmarshalBorsh_BigStruct          | 59.60     | 0     | 0         | (baseline for UnmarshalPOD) |
 | PatchBlockhash_ViewAs             | 0.23      | 0     | 0         | #7 ViewAs |
 | PatchBlockhash_Copy               | 0.23      | 0     | 0         | (raw copy) |
 | PatchBlockhash_DecodeEncode       | 180.7     | 128   | 2         | (no-ViewAs baseline) |
@@ -86,6 +92,7 @@ the small primitive regressions are acceptable.
 | #8 | Bounded allocations (MaxSliceLen/MaxMapLen, element-size-aware checks) | Closes map DoS (2^32 -> error) and slice element-size amplification. Zero perf cost. |
 | #4 | Cursor (zero-overhead write cursor)        | 6.8-11.7x faster than Encoder for hand-rolled encoders |
 | #7 | ViewAs (in-place field mutation)           | 730x faster than decode-then-encode round-trip for patches |
+| #5 | MarshalPOD / UnmarshalPOD (generic memcpy) | 230-470x faster than reflection-driven Marshal for pure-POD types |
 
 ## Reproducing
 

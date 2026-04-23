@@ -536,7 +536,9 @@ func (tx *Transaction) MarshalBinary() ([]byte, error) {
 	}
 
 	var signaturesCountBytes []byte
-	bin.EncodeCompactU16Length(&signaturesCountBytes, len(signatures))
+	if err := bin.EncodeCompactU16Length(&signaturesCountBytes, len(signatures)); err != nil {
+		return nil, err
+	}
 
 	binaryTx := make([]byte, 0, len(signaturesCountBytes)+len(signatures)*64+len(messageContent))
 	binaryTx = append(binaryTx, signaturesCountBytes...)

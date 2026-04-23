@@ -17,8 +17,8 @@ package stake
 import (
 	"errors"
 
-	bin "github.com/gagliardetto/solana-go/binary"
 	ag_solanago "github.com/gagliardetto/solana-go"
+	bin "github.com/gagliardetto/solana-go/binary"
 )
 
 type Authorized struct {

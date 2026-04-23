@@ -104,3 +104,87 @@ func BenchmarkPatchBlockhash_DecodeEncode(b *testing.B) {
 		}
 	}
 }
+
+// ---- MarshalPOD / UnmarshalPOD vs reflection-driven Borsh ----
+
+// Larger POD struct for a more meaningful memcpy benchmark (64 bytes).
+type bigPOD struct {
+	A, B, C, D, E, F, G, H uint64
+}
+
+func makeBigPOD() *bigPOD {
+	return &bigPOD{
+		A: 0x1111, B: 0x2222, C: 0x3333, D: 0x4444,
+		E: 0x5555, F: 0x6666, G: 0x7777, H: 0x8888,
+	}
+}
+
+func BenchmarkMarshalPOD_Pubkey(b *testing.B) {
+	var k pubkeyView
+	for i := range k {
+		k[i] = byte(i)
+	}
+	dst := make([]byte, 32)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = MarshalPOD(&k, dst)
+	}
+}
+
+func BenchmarkMarshalBorshInto_Pubkey(b *testing.B) {
+	var k pubkeyView
+	for i := range k {
+		k[i] = byte(i)
+	}
+	dst := make([]byte, 32)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = MarshalBorshInto(&k, dst)
+	}
+}
+
+func BenchmarkMarshalPOD_BigStruct(b *testing.B) {
+	v := makeBigPOD()
+	dst := make([]byte, 64)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = MarshalPOD(v, dst)
+	}
+}
+
+func BenchmarkMarshalBorshInto_BigStruct(b *testing.B) {
+	v := makeBigPOD()
+	dst := make([]byte, 64)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = MarshalBorshInto(v, dst)
+	}
+}
+
+func BenchmarkUnmarshalPOD_BigStruct(b *testing.B) {
+	v := makeBigPOD()
+	src := make([]byte, 64)
+	_, _ = MarshalPOD(v, src)
+	var out bigPOD
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = UnmarshalPOD(&out, src)
+	}
+}
+
+func BenchmarkUnmarshalBorsh_BigStruct(b *testing.B) {
+	v := makeBigPOD()
+	src := make([]byte, 64)
+	_, _ = MarshalBorshInto(v, src)
+	var out bigPOD
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = UnmarshalBorsh(&out, src)
+	}
+}

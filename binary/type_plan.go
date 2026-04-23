@@ -65,7 +65,7 @@ type fieldPlan struct {
 	// Fast per-field dispatch closures populated for primitive kinds. nil
 	// means the field must go through the generic decodeXxx/encodeXxx path.
 	// borshFastDecode / binFastDecode are populated separately because
-	// borsh hard-codes little-endian whereas bin/compact-u16 honour the
+	// borsh hard-codes little-endian whereas bin/compact-u16 honor the
 	// per-field byte-order tag.
 	borshFastDecode fieldFastDecode
 	borshFastEncode fieldFastEncode

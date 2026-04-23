@@ -336,3 +336,183 @@ func TestViewAs_ZeroAllocs(t *testing.T) {
 		t.Fatalf("ViewAs allocs = %g, want 0", allocs)
 	}
 }
+
+// ---------- MarshalPOD / UnmarshalPOD ----------
+
+// TestMarshalPOD_RoundTrip confirms MarshalPOD -> UnmarshalPOD returns
+// a value equal to the original.
+func TestMarshalPOD_RoundTrip(t *testing.T) {
+	orig := homogeneousFeeView{A: 0x0123456789abcdef, B: 0xdeadbeefcafebabe}
+	buf := make([]byte, 16)
+	n, err := MarshalPOD(&orig, buf)
+	if err != nil {
+		t.Fatalf("MarshalPOD failed: %v", err)
+	}
+	if n != 16 {
+		t.Fatalf("expected 16 bytes written, got %d", n)
+	}
+
+	var got homogeneousFeeView
+	if err := UnmarshalPOD(&got, buf); err != nil {
+		t.Fatalf("UnmarshalPOD failed: %v", err)
+	}
+	if got != orig {
+		t.Fatalf("round-trip mismatch: got %+v, want %+v", got, orig)
+	}
+}
+
+// TestMarshalPOD_WireParity_Pubkey confirms that for a fixed-byte-array
+// POD, MarshalPOD produces byte-identical output to MarshalBorshInto.
+// This verifies Go memory layout matches LE wire layout on the host.
+func TestMarshalPOD_WireParity_Pubkey(t *testing.T) {
+	var k pubkeyView
+	for i := range k {
+		k[i] = byte(i + 1)
+	}
+
+	podBuf := make([]byte, 32)
+	if _, err := MarshalPOD(&k, podBuf); err != nil {
+		t.Fatal(err)
+	}
+
+	borshBuf := make([]byte, 32)
+	if _, err := MarshalBorshInto(&k, borshBuf); err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(podBuf, borshBuf) {
+		t.Fatalf("wire mismatch:\n pod:   %x\n borsh: %x", podBuf, borshBuf)
+	}
+}
+
+// TestMarshalPOD_WireParity_HomogeneousStruct confirms parity for a
+// multi-field POD struct (two u64s, no Go padding).
+func TestMarshalPOD_WireParity_HomogeneousStruct(t *testing.T) {
+	v := homogeneousFeeView{A: 0x0123456789abcdef, B: 0xdeadbeefcafebabe}
+
+	podBuf := make([]byte, 16)
+	if _, err := MarshalPOD(&v, podBuf); err != nil {
+		t.Fatal(err)
+	}
+
+	borshBuf := make([]byte, 16)
+	if _, err := MarshalBorshInto(&v, borshBuf); err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(podBuf, borshBuf) {
+		t.Fatalf("wire mismatch:\n pod:   %x\n borsh: %x", podBuf, borshBuf)
+	}
+}
+
+// TestMarshalPOD_ShortBuffer confirms an undersized dst returns
+// io.ErrShortBuffer and does not panic.
+func TestMarshalPOD_ShortBuffer(t *testing.T) {
+	var k pubkeyView
+	_, err := MarshalPOD(&k, make([]byte, 31))
+	if !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
+	}
+}
+
+func TestUnmarshalPOD_ShortBuffer(t *testing.T) {
+	var k pubkeyView
+	err := UnmarshalPOD(&k, make([]byte, 31))
+	if !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
+	}
+}
+
+// TestMarshalPOD_DetachedCopy confirms the output buffer is a detached
+// copy: mutating dst after MarshalPOD must not reach back into *v.
+// This is the key difference from ViewAs (which returns an alias).
+func TestMarshalPOD_DetachedCopy(t *testing.T) {
+	orig := pubkeyView{1, 2, 3, 4, 5, 6, 7, 8}
+	dst := make([]byte, 32)
+	if _, err := MarshalPOD(&orig, dst); err != nil {
+		t.Fatal(err)
+	}
+
+	// Stomp on dst; orig must be untouched.
+	for i := range dst {
+		dst[i] = 0xff
+	}
+
+	want := pubkeyView{1, 2, 3, 4, 5, 6, 7, 8}
+	if orig != want {
+		t.Fatalf("MarshalPOD leaked aliasing: orig mutated to %v", orig)
+	}
+}
+
+// TestUnmarshalPOD_DetachedCopy confirms the decoded value is a
+// detached copy of src: mutating src after UnmarshalPOD must not
+// reach back into *v.
+func TestUnmarshalPOD_DetachedCopy(t *testing.T) {
+	src := make([]byte, 32)
+	for i := range src {
+		src[i] = byte(i + 1)
+	}
+
+	var decoded pubkeyView
+	if err := UnmarshalPOD(&decoded, src); err != nil {
+		t.Fatal(err)
+	}
+
+	for i := range src {
+		src[i] = 0xff
+	}
+
+	var want pubkeyView
+	for i := range want {
+		want[i] = byte(i + 1)
+	}
+	if decoded != want {
+		t.Fatalf("UnmarshalPOD leaked aliasing: decoded mutated to %v", decoded)
+	}
+}
+
+// TestMarshalPODAlloc confirms the convenience wrapper returns a
+// correctly-sized fresh slice.
+func TestMarshalPODAlloc(t *testing.T) {
+	v := homogeneousFeeView{A: 1, B: 2}
+	got := MarshalPODAlloc(&v)
+	if len(got) != 16 {
+		t.Fatalf("expected 16 bytes, got %d", len(got))
+	}
+
+	// Compare to MarshalPOD on a pre-sized buffer.
+	want := make([]byte, 16)
+	if _, err := MarshalPOD(&v, want); err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(got, want) {
+		t.Fatalf("mismatch:\n got:  %x\n want: %x", got, want)
+	}
+}
+
+// TestMarshalPOD_ZeroAllocs confirms MarshalPOD / UnmarshalPOD are
+// truly zero-alloc in the fast path. Only MarshalPODAlloc allocates
+// (one slice for the result).
+func TestMarshalPOD_ZeroAllocs(t *testing.T) {
+	if testing.Short() {
+		t.Skip("allocation test disabled under -short")
+	}
+	v := pubkeyView{1, 2, 3, 4, 5, 6, 7, 8}
+	dst := make([]byte, 32)
+
+	marshalAllocs := testing.AllocsPerRun(200, func() {
+		_, _ = MarshalPOD(&v, dst)
+	})
+	if marshalAllocs != 0 {
+		t.Errorf("MarshalPOD allocs = %g, want 0", marshalAllocs)
+	}
+
+	src := make([]byte, 32)
+	var out pubkeyView
+	unmarshalAllocs := testing.AllocsPerRun(200, func() {
+		_ = UnmarshalPOD(&out, src)
+	})
+	if unmarshalAllocs != 0 {
+		t.Errorf("UnmarshalPOD allocs = %g, want 0", unmarshalAllocs)
+	}
+}

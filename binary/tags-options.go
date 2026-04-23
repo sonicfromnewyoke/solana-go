@@ -58,12 +58,6 @@ func (o option) getSizeOfSlice() int {
 	return o.sliceSize
 }
 
-func (o *option) setSizeOfSlice(size int) *option {
-	o.sliceSize = size
-	o.sliceSizeIsSet = true
-	return o
-}
-
 type Encoding int
 
 const (

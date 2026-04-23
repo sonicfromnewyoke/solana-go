@@ -515,7 +515,7 @@ func (e *Encoder) WriteCompactU16Length(ln int) (err error) {
 //
 // When rv is not addressable (caller passed a struct by value), we fall back
 // to a per-element reflect.Index path that uses an intermediate scratch
-// slice. This is the same behaviour as the pre-PoD-fast-path implementation.
+// slice. This is the same behavior as the pre-PoD-fast-path implementation.
 //
 // elemSize must be 1, 2, 4, or 8.
 func writePoDSliceBytes(e *Encoder, rv reflect.Value, l, elemSize int, order binary.ByteOrder) error {

@@ -153,6 +153,64 @@ func MustAssertPOD[T any]() {
 	}
 }
 
+// MarshalPOD copies the byte representation of *v into dst and returns
+// the number of bytes written. For a type T satisfying the POD
+// constraints (see ViewAs), this is a single memcpy — roughly an order
+// of magnitude faster than MarshalBorshInto for pure-POD structs.
+//
+// The written bytes are a *detached* copy: mutating dst after the call
+// does not affect *v, and vice versa. Contrast with ViewAs, which
+// returns an alias.
+//
+// Constraints (all identical to ViewAs; verify at program start with
+// AssertPOD[T]):
+//
+//  1. T is fixed-size POD — no pointers, slices, maps, strings,
+//     interfaces, channels, or functions.
+//  2. No Go-compiler-inserted padding.
+//  3. Wire byte order matches host byte order. On amd64/arm64 that's
+//     little-endian; callable for LE wire formats (Solana compact-u16,
+//     borsh, bincode). Not valid on big-endian hosts.
+//
+// Returns io.ErrShortBuffer when len(dst) < unsafe.Sizeof(T{}).
+func MarshalPOD[T any](v *T, dst []byte) (int, error) {
+	sz := unsafe.Sizeof(*v)
+	if uintptr(len(dst)) < sz {
+		return 0, io.ErrShortBuffer
+	}
+	copy(dst[:sz], unsafe.Slice((*byte)(unsafe.Pointer(v)), sz))
+	return int(sz), nil
+}
+
+// MarshalPODAlloc is MarshalPOD with a fresh result buffer. Equivalent
+// to MarshalBorsh(v) for POD T, but without the reflection path.
+//
+// Allocates exactly one []byte of size unsafe.Sizeof(T{}). Prefer
+// MarshalPOD when a pre-sized destination is already available.
+func MarshalPODAlloc[T any](v *T) []byte {
+	sz := unsafe.Sizeof(*v)
+	dst := make([]byte, sz)
+	copy(dst, unsafe.Slice((*byte)(unsafe.Pointer(v)), sz))
+	return dst
+}
+
+// UnmarshalPOD copies sizeof(T) bytes from src into *v. Inverse of
+// MarshalPOD. Same constraints apply.
+//
+// The decoded value is a *detached* copy of the wire bytes: mutating
+// src after the call does not affect *v, and vice versa. Contrast
+// with ViewAs, which returns an alias into the source buffer.
+//
+// Returns io.ErrShortBuffer when len(src) < unsafe.Sizeof(T{}).
+func UnmarshalPOD[T any](v *T, src []byte) error {
+	sz := unsafe.Sizeof(*v)
+	if uintptr(len(src)) < sz {
+		return io.ErrShortBuffer
+	}
+	copy(unsafe.Slice((*byte)(unsafe.Pointer(v)), sz), src[:sz])
+	return nil
+}
+
 func assertPODType(rt reflect.Type, path string) error {
 	switch rt.Kind() {
 	case reflect.Bool,

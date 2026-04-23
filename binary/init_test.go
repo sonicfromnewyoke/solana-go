@@ -20,8 +20,6 @@ import (
 
 type aliasTestType uint64
 
-type unknownType struct{}
-
 type binaryTestStruct struct {
 	F1  string
 	F2  int16

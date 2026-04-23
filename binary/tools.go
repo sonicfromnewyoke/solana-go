@@ -72,7 +72,7 @@ func (rec WriteByWrite) String() string {
 		builder.WriteString(rec.name + ":\n")
 	}
 	for index, v := range rec.writes {
-		builder.WriteString(fmt.Sprintf("- %v: %s\n", index, FormatByteSlice(v)))
+		fmt.Fprintf(builder, "- %v: %s\n", index, FormatByteSlice(v))
 	}
 	return builder.String()
 }

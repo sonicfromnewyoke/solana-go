@@ -58,7 +58,7 @@ func (dec *Decoder) decodeCompactU16(rv reflect.Value, opt option) (err error) {
 	if opt.is_Optional() {
 		isPresent, e := dec.ReadByte()
 		if e != nil {
-			err = fmt.Errorf("decode: %t isPresent, %s", rv.Type(), e)
+			err = fmt.Errorf("decode: %s isPresent, %w", rv.Type(), e)
 			return
 		}
 

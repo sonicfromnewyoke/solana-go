@@ -145,7 +145,7 @@ func lowercase(s string, b *strings.Builder) {
 
 func splitIntoWords(s string) []string {
 	return strings.FieldsFunc(s, func(r rune) bool {
-		return !(unicode.IsLetter(r) || unicode.IsDigit(r))
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
 	})
 }
 

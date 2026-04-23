@@ -19,8 +19,8 @@ import (
 	"errors"
 	"fmt"
 
-	bin "github.com/gagliardetto/solana-go/binary"
 	"github.com/gagliardetto/solana-go"
+	bin "github.com/gagliardetto/solana-go/binary"
 )
 
 // Constants from the official vote program.

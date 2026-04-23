@@ -59,7 +59,7 @@ func (dec *Decoder) decodeBin(rv reflect.Value, opt option) (err error) {
 	if opt.is_Optional() {
 		isPresent, e := dec.ReadUint32(binary.LittleEndian)
 		if e != nil {
-			err = fmt.Errorf("decode: %s isPresent, %s", rv.Type().String(), e)
+			err = fmt.Errorf("decode: %s isPresent, %w", rv.Type().String(), e)
 			return
 		}
 
