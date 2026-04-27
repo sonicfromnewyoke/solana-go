@@ -26,7 +26,7 @@ import (
 	bin "github.com/gagliardetto/binary"
 	"github.com/mostynb/zstdpool-freelist"
 	mrtronbase58 "github.com/mr-tron/base58"
-	"github.com/solana-foundation/solana-go/base58"
+	"github.com/solana-foundation/solana-go/v2/base58"
 )
 
 type Padding []byte

@@ -31,7 +31,7 @@ import (
 
 	"filippo.io/edwards25519/field"
 	mrtronbase58 "github.com/mr-tron/base58"
-	"github.com/solana-foundation/solana-go/base58"
+	"github.com/solana-foundation/solana-go/v2/base58"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 

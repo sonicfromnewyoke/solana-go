@@ -23,8 +23,8 @@ import (
 
 	"github.com/ryanuber/columnize"
 
-	"github.com/solana-foundation/solana-go/programs/tokenregistry"
-	_ "github.com/solana-foundation/solana-go/programs/tokenregistry"
+	"github.com/solana-foundation/solana-go/v2/programs/tokenregistry"
+	_ "github.com/solana-foundation/solana-go/v2/programs/tokenregistry"
 	"github.com/spf13/cobra"
 )
 

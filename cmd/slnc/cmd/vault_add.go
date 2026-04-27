@@ -21,10 +21,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/solana-foundation/solana-go"
+	"github.com/solana-foundation/solana-go/v2"
 
-	"github.com/solana-foundation/solana-go/cli"
-	"github.com/solana-foundation/solana-go/vault"
+	"github.com/solana-foundation/solana-go/v2/cli"
+	"github.com/solana-foundation/solana-go/v2/vault"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

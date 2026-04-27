@@ -19,7 +19,7 @@ package rpc
 import (
 	"context"
 
-	"github.com/solana-foundation/solana-go"
+	"github.com/solana-foundation/solana-go/v2"
 )
 
 type RequestAirdropOpts struct {

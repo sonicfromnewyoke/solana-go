@@ -20,8 +20,8 @@ import (
 
 	bin "github.com/gagliardetto/binary"
 	treeout "github.com/gagliardetto/treeout"
-	solana "github.com/solana-foundation/solana-go"
-	format "github.com/solana-foundation/solana-go/text/format"
+	solana "github.com/solana-foundation/solana-go/v2"
+	format "github.com/solana-foundation/solana-go/v2/text/format"
 )
 
 // RecoverNested transfers tokens from and closes a nested associated token account:

@@ -5,8 +5,8 @@ import (
 
 	bin "github.com/gagliardetto/binary"
 	"github.com/gagliardetto/treeout"
-	"github.com/solana-foundation/solana-go"
-	"github.com/solana-foundation/solana-go/text/format"
+	"github.com/solana-foundation/solana-go/v2"
+	"github.com/solana-foundation/solana-go/v2/text/format"
 )
 
 // UpdateValidatorIdentity updates the validator identity of a vote account.

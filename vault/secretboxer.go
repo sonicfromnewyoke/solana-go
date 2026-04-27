@@ -19,7 +19,7 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
-	"github.com/solana-foundation/solana-go/cli"
+	"github.com/solana-foundation/solana-go/v2/cli"
 )
 
 type SecretBoxer interface {

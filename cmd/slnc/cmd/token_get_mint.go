@@ -21,8 +21,8 @@ import (
 	"fmt"
 
 	"github.com/ryanuber/columnize"
-	"github.com/solana-foundation/solana-go"
-	"github.com/solana-foundation/solana-go/programs/token"
+	"github.com/solana-foundation/solana-go/v2"
+	"github.com/solana-foundation/solana-go/v2/programs/token"
 	"github.com/spf13/cobra"
 )
 

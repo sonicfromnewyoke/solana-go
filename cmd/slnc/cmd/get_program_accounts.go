@@ -22,8 +22,8 @@ import (
 	"os"
 
 	json "github.com/goccy/go-json"
-	"github.com/solana-foundation/solana-go"
-	"github.com/solana-foundation/solana-go/text"
+	"github.com/solana-foundation/solana-go/v2"
+	"github.com/solana-foundation/solana-go/v2/text"
 	"github.com/spf13/cobra"
 )
 

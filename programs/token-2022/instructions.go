@@ -25,8 +25,8 @@ import (
 	ag_spew "github.com/davecgh/go-spew/spew"
 	ag_binary "github.com/gagliardetto/binary"
 	ag_treeout "github.com/gagliardetto/treeout"
-	ag_solanago "github.com/solana-foundation/solana-go"
-	ag_text "github.com/solana-foundation/solana-go/text"
+	ag_solanago "github.com/solana-foundation/solana-go/v2"
+	ag_text "github.com/solana-foundation/solana-go/v2/text"
 )
 
 // Maximum number of multisignature signers (max N)

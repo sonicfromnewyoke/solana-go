@@ -20,8 +20,8 @@ import (
 
 	ag_binary "github.com/gagliardetto/binary"
 	ag_treeout "github.com/gagliardetto/treeout"
-	ag_solanago "github.com/solana-foundation/solana-go"
-	ag_format "github.com/solana-foundation/solana-go/text/format"
+	ag_solanago "github.com/solana-foundation/solana-go/v2"
+	ag_format "github.com/solana-foundation/solana-go/v2/text/format"
 )
 
 // Burns tokens by removing them from an account.  `BurnChecked` does not

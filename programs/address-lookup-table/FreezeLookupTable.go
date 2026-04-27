@@ -6,8 +6,8 @@ import (
 
 	bin "github.com/gagliardetto/binary"
 	treeout "github.com/gagliardetto/treeout"
-	solana "github.com/solana-foundation/solana-go"
-	format "github.com/solana-foundation/solana-go/text/format"
+	solana "github.com/solana-foundation/solana-go/v2"
+	format "github.com/solana-foundation/solana-go/v2/text/format"
 )
 
 // FreezeLookupTable permanently freezes a lookup table, making it immutable.
