@@ -27,8 +27,9 @@ import (
 // Retract moves a Deployed program back to Retracted, re-enabling writes.
 //
 // Account references:
-//   [0] = [WRITE]   Program account
-//   [1] = [SIGNER]  Authority
+//
+//	[0] = [WRITE]   Program account
+//	[1] = [SIGNER]  Authority
 type Retract struct {
 	ag_solanago.AccountMetaSlice `bin:"-" borsh_skip:"true"`
 }
@@ -85,7 +86,7 @@ func (inst *Retract) EncodeToTree(parent ag_treeout.Branches) {
 		})
 }
 
-func (inst Retract) MarshalWithEncoder(_ *ag_binary.Encoder) error   { return nil }
+func (inst Retract) MarshalWithEncoder(_ *ag_binary.Encoder) error    { return nil }
 func (inst *Retract) UnmarshalWithDecoder(_ *ag_binary.Decoder) error { return nil }
 
 func NewRetractInstruction(program, authority ag_solanago.PublicKey) *Retract {

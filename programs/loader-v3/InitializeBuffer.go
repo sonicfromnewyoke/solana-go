@@ -29,9 +29,10 @@ import (
 // and records the authority that is permitted to write to it.
 //
 // Account references:
-//   [0] = [WRITE] Buffer account
-//   [1] = []      Authority (not a signer here; only used to record the
-//                  authority address)
+//
+//	[0] = [WRITE] Buffer account
+//	[1] = []      Authority (not a signer here; only used to record the
+//	               authority address)
 type InitializeBuffer struct {
 	ag_solanago.AccountMetaSlice `bin:"-" borsh_skip:"true"`
 }
@@ -88,7 +89,7 @@ func (inst *InitializeBuffer) EncodeToTree(parent ag_treeout.Branches) {
 		})
 }
 
-func (inst InitializeBuffer) MarshalWithEncoder(_ *ag_binary.Encoder) error   { return nil }
+func (inst InitializeBuffer) MarshalWithEncoder(_ *ag_binary.Encoder) error    { return nil }
 func (inst *InitializeBuffer) UnmarshalWithDecoder(_ *ag_binary.Decoder) error { return nil }
 
 // NewInitializeBufferInstruction builds the InitializeBuffer instruction

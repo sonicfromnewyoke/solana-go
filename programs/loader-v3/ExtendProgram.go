@@ -29,10 +29,11 @@ import (
 // (SIMD-0431 caps the minimum granularity at MINIMUM_EXTEND_PROGRAM_BYTES).
 //
 // Account references:
-//   [0] = [WRITE]             ProgramData (PDA)
-//   [1] = [WRITE]             Program account
-//   [2] = [optional]          System program  (required when payer is provided)
-//   [3] = [WRITE, SIGNER, optional] Payer (covers any additional rent)
+//
+//	[0] = [WRITE]             ProgramData (PDA)
+//	[1] = [WRITE]             Program account
+//	[2] = [optional]          System program  (required when payer is provided)
+//	[3] = [WRITE, SIGNER, optional] Payer (covers any additional rent)
 type ExtendProgram struct {
 	AdditionalBytes *uint32
 

@@ -25,19 +25,21 @@ import (
 )
 
 // SetAuthority changes the authority on a buffer or programdata account.
-// The unchecked variant is deprecated upstream in favour of
+// The unchecked variant is deprecated upstream in favor of
 // SetAuthorityChecked when setting a new non-nil authority, but it remains
 // the only way to clear an upgrade authority (pass nil for the new authority).
 //
 // Account references (buffer form):
-//   [0] = [WRITE]     Buffer account
-//   [1] = [SIGNER]    Current authority
-//   [2] = [optional]  New authority (omit to drop the authority)
+//
+//	[0] = [WRITE]     Buffer account
+//	[1] = [SIGNER]    Current authority
+//	[2] = [optional]  New authority (omit to drop the authority)
 //
 // Account references (programdata form):
-//   [0] = [WRITE]     ProgramData (PDA)
-//   [1] = [SIGNER]    Current authority
-//   [2] = [optional]  New authority (omit to make the program immutable)
+//
+//	[0] = [WRITE]     ProgramData (PDA)
+//	[1] = [SIGNER]    Current authority
+//	[2] = [optional]  New authority (omit to make the program immutable)
 type SetAuthority struct {
 	ag_solanago.AccountMetaSlice `bin:"-" borsh_skip:"true"`
 }
@@ -86,11 +88,11 @@ func (inst *SetAuthority) EncodeToTree(parent ag_treeout.Branches) {
 		})
 }
 
-func (inst SetAuthority) MarshalWithEncoder(_ *ag_binary.Encoder) error   { return nil }
+func (inst SetAuthority) MarshalWithEncoder(_ *ag_binary.Encoder) error    { return nil }
 func (inst *SetAuthority) UnmarshalWithDecoder(_ *ag_binary.Decoder) error { return nil }
 
 // NewSetBufferAuthorityInstruction builds a SetAuthority that transfers a
-// buffer's authority. Upstream deprecates this in favour of
+// buffer's authority. Upstream deprecates this in favor of
 // NewSetBufferAuthorityCheckedInstruction, but it is retained for decoding
 // historical transactions.
 func NewSetBufferAuthorityInstruction(

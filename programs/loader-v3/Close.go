@@ -28,10 +28,11 @@ import (
 // its lamports.
 //
 // Account references:
-//   [0] = [WRITE]             Account to close
-//   [1] = [WRITE]             Lamports recipient
-//   [2] = [SIGNER, optional]  Authority (omit for uninitialized close)
-//   [3] = [WRITE, optional]   Program (required when closing programdata)
+//
+//	[0] = [WRITE]             Account to close
+//	[1] = [WRITE]             Lamports recipient
+//	[2] = [SIGNER, optional]  Authority (omit for uninitialized close)
+//	[3] = [WRITE, optional]   Program (required when closing programdata)
 //
 // Tombstone (SIMD-0432): when true, the closed account is left as a
 // tombstone rather than fully reclaimed, blocking future re-use of the

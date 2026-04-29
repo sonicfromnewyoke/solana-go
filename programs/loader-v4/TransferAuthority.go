@@ -28,9 +28,10 @@ import (
 // and new authorities must sign (no unchecked variant exists for v4).
 //
 // Account references:
-//   [0] = [WRITE]   Program account
-//   [1] = [SIGNER]  Current authority
-//   [2] = [SIGNER]  New authority
+//
+//	[0] = [WRITE]   Program account
+//	[1] = [SIGNER]  Current authority
+//	[2] = [SIGNER]  New authority
 type TransferAuthority struct {
 	ag_solanago.AccountMetaSlice `bin:"-" borsh_skip:"true"`
 }
@@ -93,7 +94,7 @@ func (inst *TransferAuthority) EncodeToTree(parent ag_treeout.Branches) {
 		})
 }
 
-func (inst TransferAuthority) MarshalWithEncoder(_ *ag_binary.Encoder) error   { return nil }
+func (inst TransferAuthority) MarshalWithEncoder(_ *ag_binary.Encoder) error    { return nil }
 func (inst *TransferAuthority) UnmarshalWithDecoder(_ *ag_binary.Decoder) error { return nil }
 
 func NewTransferAuthorityInstruction(program, authority, newAuthority ag_solanago.PublicKey) *TransferAuthority {

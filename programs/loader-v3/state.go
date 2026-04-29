@@ -33,10 +33,10 @@ const (
 // Size constants for the serialized UpgradeableLoaderState header, matching
 // upstream's `UpgradeableLoaderState::size_of_*` helpers.
 const (
-	SizeOfUninitialized        = 4  // u32 discriminant
-	SizeOfBufferMetadata       = 37 // disc(4) + Option<Pubkey> tag(1) + 32
-	SizeOfProgram              = 36 // disc(4) + Pubkey(32)
-	SizeOfProgramDataMetadata  = 45 // disc(4) + slot(8) + Option<Pubkey> tag(1) + 32
+	SizeOfUninitialized       = 4  // u32 discriminant
+	SizeOfBufferMetadata      = 37 // disc(4) + Option<Pubkey> tag(1) + 32
+	SizeOfProgram             = 36 // disc(4) + Pubkey(32)
+	SizeOfProgramDataMetadata = 45 // disc(4) + slot(8) + Option<Pubkey> tag(1) + 32
 )
 
 // SizeOfBuffer returns the account size required to hold a Buffer of the

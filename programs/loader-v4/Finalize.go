@@ -30,9 +30,10 @@ import (
 // pointer's semantics.
 //
 // Account references:
-//   [0] = [WRITE]   Program account
-//   [1] = [SIGNER]  Authority
-//   [2] = []        Next-version program account
+//
+//	[0] = [WRITE]   Program account
+//	[1] = [SIGNER]  Authority
+//	[2] = []        Next-version program account
 type Finalize struct {
 	ag_solanago.AccountMetaSlice `bin:"-" borsh_skip:"true"`
 }
@@ -95,7 +96,7 @@ func (inst *Finalize) EncodeToTree(parent ag_treeout.Branches) {
 		})
 }
 
-func (inst Finalize) MarshalWithEncoder(_ *ag_binary.Encoder) error   { return nil }
+func (inst Finalize) MarshalWithEncoder(_ *ag_binary.Encoder) error    { return nil }
 func (inst *Finalize) UnmarshalWithDecoder(_ *ag_binary.Decoder) error { return nil }
 
 func NewFinalizeInstruction(

@@ -29,9 +29,10 @@ import (
 // program account without having to round-trip through `Write`.
 //
 // Account references:
-//   [0] = [WRITE]   Destination program
-//   [1] = [SIGNER]  Authority
-//   [2] = []        Source program
+//
+//	[0] = [WRITE]   Destination program
+//	[1] = [SIGNER]  Authority
+//	[2] = []        Source program
 type Copy struct {
 	DestinationOffset *uint32
 	SourceOffset      *uint32
@@ -87,7 +88,7 @@ func (inst *Copy) Validate() error {
 		return errors.New("SourceOffset parameter is not set")
 	}
 	if inst.Length == nil {
-		return errors.New("Length parameter is not set")
+		return errors.New("length parameter is not set")
 	}
 	for i, acc := range inst.AccountMetaSlice {
 		if acc == nil {

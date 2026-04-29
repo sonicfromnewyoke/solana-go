@@ -30,9 +30,10 @@ import (
 // effectively closes the account and refunds its rent to the recipient.
 //
 // Account references:
-//   [0] = [WRITE]   Program account
-//   [1] = [SIGNER]  Authority
-//   [2] = [WRITE]   Recipient (rent refund destination)
+//
+//	[0] = [WRITE]   Program account
+//	[1] = [SIGNER]  Authority
+//	[2] = [WRITE]   Recipient (rent refund destination)
 type SetProgramLength struct {
 	NewSize *uint32
 

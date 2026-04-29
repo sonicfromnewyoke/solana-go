@@ -29,8 +29,9 @@ import (
 // Write copies a chunk of bytes into a program account.
 //
 // Account references:
-//   [0] = [WRITE]   Program account
-//   [1] = [SIGNER]  Authority
+//
+//	[0] = [WRITE]   Program account
+//	[1] = [SIGNER]  Authority
 type Write struct {
 	Offset *uint32
 	Bytes  []byte
@@ -73,7 +74,7 @@ func (inst Write) ValidateAndBuild() (*Instruction, error) {
 
 func (inst *Write) Validate() error {
 	if inst.Offset == nil {
-		return errors.New("Offset parameter is not set")
+		return errors.New("offset parameter is not set")
 	}
 	for i, acc := range inst.AccountMetaSlice {
 		if acc == nil {

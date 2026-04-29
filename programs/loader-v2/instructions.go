@@ -81,8 +81,8 @@ func (inst *Instruction) EncodeToTree(parent ag_treeout.Branches) {
 var InstructionImplDef = ag_binary.NewVariantDefinition(
 	ag_binary.Uint32TypeIDEncoding,
 	[]ag_binary.VariantType{
-		{"Write", (*Write)(nil)},
-		{"Finalize", (*Finalize)(nil)},
+		{Name: "Write", Type: (*Write)(nil)},
+		{Name: "Finalize", Type: (*Finalize)(nil)},
 	},
 )
 

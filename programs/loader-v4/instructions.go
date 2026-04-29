@@ -96,13 +96,13 @@ func (inst *Instruction) EncodeToTree(parent ag_treeout.Branches) {
 var InstructionImplDef = ag_binary.NewVariantDefinition(
 	ag_binary.Uint32TypeIDEncoding,
 	[]ag_binary.VariantType{
-		{"Write", (*Write)(nil)},
-		{"Copy", (*Copy)(nil)},
-		{"SetProgramLength", (*SetProgramLength)(nil)},
-		{"Deploy", (*Deploy)(nil)},
-		{"Retract", (*Retract)(nil)},
-		{"TransferAuthority", (*TransferAuthority)(nil)},
-		{"Finalize", (*Finalize)(nil)},
+		{Name: "Write", Type: (*Write)(nil)},
+		{Name: "Copy", Type: (*Copy)(nil)},
+		{Name: "SetProgramLength", Type: (*SetProgramLength)(nil)},
+		{Name: "Deploy", Type: (*Deploy)(nil)},
+		{Name: "Retract", Type: (*Retract)(nil)},
+		{Name: "TransferAuthority", Type: (*TransferAuthority)(nil)},
+		{Name: "Finalize", Type: (*Finalize)(nil)},
 	},
 )
 

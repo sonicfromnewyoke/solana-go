@@ -110,14 +110,14 @@ func (inst *Instruction) EncodeToTree(parent ag_treeout.Branches) {
 var InstructionImplDef = ag_binary.NewVariantDefinition(
 	ag_binary.Uint32TypeIDEncoding,
 	[]ag_binary.VariantType{
-		{"InitializeBuffer", (*InitializeBuffer)(nil)},
-		{"Write", (*Write)(nil)},
-		{"DeployWithMaxDataLen", (*DeployWithMaxDataLen)(nil)},
-		{"Upgrade", (*Upgrade)(nil)},
-		{"SetAuthority", (*SetAuthority)(nil)},
-		{"Close", (*Close)(nil)},
-		{"ExtendProgram", (*ExtendProgram)(nil)},
-		{"SetAuthorityChecked", (*SetAuthorityChecked)(nil)},
+		{Name: "InitializeBuffer", Type: (*InitializeBuffer)(nil)},
+		{Name: "Write", Type: (*Write)(nil)},
+		{Name: "DeployWithMaxDataLen", Type: (*DeployWithMaxDataLen)(nil)},
+		{Name: "Upgrade", Type: (*Upgrade)(nil)},
+		{Name: "SetAuthority", Type: (*SetAuthority)(nil)},
+		{Name: "Close", Type: (*Close)(nil)},
+		{Name: "ExtendProgram", Type: (*ExtendProgram)(nil)},
+		{Name: "SetAuthorityChecked", Type: (*SetAuthorityChecked)(nil)},
 	},
 )
 

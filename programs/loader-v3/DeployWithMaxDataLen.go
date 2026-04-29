@@ -30,14 +30,15 @@ import (
 // reserving `MaxDataLen` bytes for future upgrades.
 //
 // Account references:
-//   [0] = [WRITE, SIGNER] Payer
-//   [1] = [WRITE]         ProgramData (PDA)
-//   [2] = [WRITE]         Program account
-//   [3] = [WRITE]         Source buffer
-//   [4] = []              Rent sysvar
-//   [5] = []              Clock sysvar
-//   [6] = []              System program
-//   [7] = [SIGNER]        Upgrade authority
+//
+//	[0] = [WRITE, SIGNER] Payer
+//	[1] = [WRITE]         ProgramData (PDA)
+//	[2] = [WRITE]         Program account
+//	[3] = [WRITE]         Source buffer
+//	[4] = []              Rent sysvar
+//	[5] = []              Clock sysvar
+//	[6] = []              System program
+//	[7] = [SIGNER]        Upgrade authority
 //
 // CloseBuffer (SIMD-0430): when true, the source buffer is closed and its
 // lamports returned to the payer atomically with the deploy.

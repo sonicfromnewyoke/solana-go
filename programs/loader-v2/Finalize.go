@@ -27,8 +27,9 @@ import (
 // Finalize an account loaded with program data for execution.
 //
 // Account references:
-//   [0] = [WRITE, SIGNER] Account to prepare for execution
-//   [1] = []              Rent sysvar
+//
+//	[0] = [WRITE, SIGNER] Account to prepare for execution
+//	[1] = []              Rent sysvar
 type Finalize struct {
 	ag_solanago.AccountMetaSlice `bin:"-" borsh_skip:"true"`
 }
@@ -97,7 +98,7 @@ func (inst *Finalize) EncodeToTree(parent ag_treeout.Branches) {
 }
 
 // Finalize carries no payload: the discriminant alone is the data.
-func (inst Finalize) MarshalWithEncoder(_ *ag_binary.Encoder) error   { return nil }
+func (inst Finalize) MarshalWithEncoder(_ *ag_binary.Encoder) error    { return nil }
 func (inst *Finalize) UnmarshalWithDecoder(_ *ag_binary.Decoder) error { return nil }
 
 func NewFinalizeInstruction(account ag_solanago.PublicKey) *Finalize {

@@ -29,7 +29,8 @@ import (
 // Write program data into an account.
 //
 // Account references:
-//   [0] = [WRITE, SIGNER] Account to write to
+//
+//	[0] = [WRITE, SIGNER] Account to write to
 type Write struct {
 	Offset *uint32
 	Bytes  []byte
@@ -78,7 +79,7 @@ func (inst Write) ValidateAndBuild() (*Instruction, error) {
 
 func (inst *Write) Validate() error {
 	if inst.Offset == nil {
-		return errors.New("Offset parameter is not set")
+		return errors.New("offset parameter is not set")
 	}
 	for i, acc := range inst.AccountMetaSlice {
 		if acc == nil {
@@ -109,7 +110,7 @@ func (inst *Write) EncodeToTree(parent ag_treeout.Branches) {
 //	[offset: u32 LE][len(bytes): u64 LE][bytes...]
 //
 // ag_binary's default slice encoder uses UVarInt for the length, which does
-// not match bincode, so Vec<u8> is serialised manually.
+// not match bincode, so Vec<u8> is serialized manually.
 func (inst Write) MarshalWithEncoder(encoder *ag_binary.Encoder) error {
 	if err := encoder.WriteUint32(*inst.Offset, binary.LittleEndian); err != nil {
 		return err

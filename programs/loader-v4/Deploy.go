@@ -29,13 +29,15 @@ import (
 // bytes from another program account instead of the target itself.
 //
 // Account references (two-account form):
-//   [0] = [WRITE]   Program account
-//   [1] = [SIGNER]  Authority
+//
+//	[0] = [WRITE]   Program account
+//	[1] = [SIGNER]  Authority
 //
 // Account references (deploy-from-source form):
-//   [0] = [WRITE]   Program account
-//   [1] = [SIGNER]  Authority
-//   [2] = [WRITE]   Source program account
+//
+//	[0] = [WRITE]   Program account
+//	[1] = [SIGNER]  Authority
+//	[2] = [WRITE]   Source program account
 type Deploy struct {
 	ag_solanago.AccountMetaSlice `bin:"-" borsh_skip:"true"`
 }
@@ -84,7 +86,7 @@ func (inst *Deploy) EncodeToTree(parent ag_treeout.Branches) {
 		})
 }
 
-func (inst Deploy) MarshalWithEncoder(_ *ag_binary.Encoder) error   { return nil }
+func (inst Deploy) MarshalWithEncoder(_ *ag_binary.Encoder) error    { return nil }
 func (inst *Deploy) UnmarshalWithDecoder(_ *ag_binary.Decoder) error { return nil }
 
 // NewDeployInstruction builds the two-account form: deploy the program

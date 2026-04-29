@@ -27,13 +27,14 @@ import (
 // Upgrade replaces an existing program's code with the contents of a buffer.
 //
 // Account references:
-//   [0] = [WRITE]   ProgramData (PDA)
-//   [1] = [WRITE]   Program account
-//   [2] = [WRITE]   Source buffer
-//   [3] = [WRITE]   Spill (lamports recipient)
-//   [4] = []        Rent sysvar
-//   [5] = []        Clock sysvar
-//   [6] = [SIGNER]  Upgrade authority
+//
+//	[0] = [WRITE]   ProgramData (PDA)
+//	[1] = [WRITE]   Program account
+//	[2] = [WRITE]   Source buffer
+//	[3] = [WRITE]   Spill (lamports recipient)
+//	[4] = []        Rent sysvar
+//	[5] = []        Clock sysvar
+//	[6] = [SIGNER]  Upgrade authority
 //
 // CloseBuffer (SIMD-0430): when true, the source buffer is closed and its
 // lamports sent to the spill account atomically with the upgrade.

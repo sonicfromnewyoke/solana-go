@@ -230,10 +230,9 @@ func TestDeployWithMaxProgramLenInstructions(t *testing.T) {
 func TestPDA_GetProgramDataAddress(t *testing.T) {
 	// Spot-check: derivation is stable for the same inputs and distinct
 	// from the program address itself.
-	pda, bump, err := GetProgramDataAddress(testProgram)
+	pda, _, err := GetProgramDataAddress(testProgram)
 	require.NoError(t, err)
 	require.NotEqual(t, testProgram, pda)
-	require.True(t, bump <= 255)
 
 	pda2, _, err := GetProgramDataAddress(testProgram)
 	require.NoError(t, err)

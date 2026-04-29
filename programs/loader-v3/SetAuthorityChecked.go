@@ -28,9 +28,10 @@ import (
 // must co-sign the transaction, preventing typos that would lock a program.
 //
 // Account references:
-//   [0] = [WRITE]   Target account (buffer or programdata)
-//   [1] = [SIGNER]  Current authority
-//   [2] = [SIGNER]  New authority
+//
+//	[0] = [WRITE]   Target account (buffer or programdata)
+//	[1] = [SIGNER]  Current authority
+//	[2] = [SIGNER]  New authority
 type SetAuthorityChecked struct {
 	ag_solanago.AccountMetaSlice `bin:"-" borsh_skip:"true"`
 }
@@ -78,7 +79,7 @@ func (inst *SetAuthorityChecked) EncodeToTree(parent ag_treeout.Branches) {
 		})
 }
 
-func (inst SetAuthorityChecked) MarshalWithEncoder(_ *ag_binary.Encoder) error   { return nil }
+func (inst SetAuthorityChecked) MarshalWithEncoder(_ *ag_binary.Encoder) error    { return nil }
 func (inst *SetAuthorityChecked) UnmarshalWithDecoder(_ *ag_binary.Decoder) error { return nil }
 
 // NewSetBufferAuthorityCheckedInstruction builds a SetAuthorityChecked that
