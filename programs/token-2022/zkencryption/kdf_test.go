@@ -214,6 +214,11 @@ func TestSeedLengthBounds(t *testing.T) {
 			func() error { _, err := zkencryption.ElGamalSecretKeyFromSeed(make([]byte, 32)); return err },
 			nil,
 		},
+		{
+			"elgamal_too_long",
+			func() error { _, err := zkencryption.ElGamalSecretKeyFromSeed(make([]byte, 65536)); return err },
+			zkencryption.ErrSeedTooLong,
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
