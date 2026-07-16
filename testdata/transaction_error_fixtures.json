@@ -1,0 +1,688 @@
+[
+  {
+    "kind": "instruction",
+    "debug": "GenericError",
+    "display": "generic instruction error",
+    "bincode": "00000000",
+    "json": "\"GenericError\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "InvalidArgument",
+    "display": "invalid program argument",
+    "bincode": "01000000",
+    "json": "\"InvalidArgument\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "InvalidInstructionData",
+    "display": "invalid instruction data",
+    "bincode": "02000000",
+    "json": "\"InvalidInstructionData\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "InvalidAccountData",
+    "display": "invalid account data for instruction",
+    "bincode": "03000000",
+    "json": "\"InvalidAccountData\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "AccountDataTooSmall",
+    "display": "account data too small for instruction",
+    "bincode": "04000000",
+    "json": "\"AccountDataTooSmall\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "InsufficientFunds",
+    "display": "insufficient funds for instruction",
+    "bincode": "05000000",
+    "json": "\"InsufficientFunds\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "IncorrectProgramId",
+    "display": "incorrect program id for instruction",
+    "bincode": "06000000",
+    "json": "\"IncorrectProgramId\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "MissingRequiredSignature",
+    "display": "missing required signature for instruction",
+    "bincode": "07000000",
+    "json": "\"MissingRequiredSignature\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "AccountAlreadyInitialized",
+    "display": "instruction requires an uninitialized account",
+    "bincode": "08000000",
+    "json": "\"AccountAlreadyInitialized\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "UninitializedAccount",
+    "display": "instruction requires an initialized account",
+    "bincode": "09000000",
+    "json": "\"UninitializedAccount\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "UnbalancedInstruction",
+    "display": "sum of account balances before and after instruction do not match",
+    "bincode": "0a000000",
+    "json": "\"UnbalancedInstruction\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ModifiedProgramId",
+    "display": "instruction illegally modified the program id of an account",
+    "bincode": "0b000000",
+    "json": "\"ModifiedProgramId\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ExternalAccountLamportSpend",
+    "display": "instruction spent from the balance of an account it does not own",
+    "bincode": "0c000000",
+    "json": "\"ExternalAccountLamportSpend\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ExternalAccountDataModified",
+    "display": "instruction modified data of an account it does not own",
+    "bincode": "0d000000",
+    "json": "\"ExternalAccountDataModified\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ReadonlyLamportChange",
+    "display": "instruction changed the balance of a read-only account",
+    "bincode": "0e000000",
+    "json": "\"ReadonlyLamportChange\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ReadonlyDataModified",
+    "display": "instruction modified data of a read-only account",
+    "bincode": "0f000000",
+    "json": "\"ReadonlyDataModified\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "DuplicateAccountIndex",
+    "display": "instruction contains duplicate accounts",
+    "bincode": "10000000",
+    "json": "\"DuplicateAccountIndex\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ExecutableModified",
+    "display": "instruction changed executable bit of an account",
+    "bincode": "11000000",
+    "json": "\"ExecutableModified\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "RentEpochModified",
+    "display": "instruction modified rent epoch of an account",
+    "bincode": "12000000",
+    "json": "\"RentEpochModified\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "NotEnoughAccountKeys",
+    "display": "insufficient account keys for instruction",
+    "bincode": "13000000",
+    "json": "\"NotEnoughAccountKeys\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "AccountDataSizeChanged",
+    "display": "program other than the account's owner changed the size of the account data",
+    "bincode": "14000000",
+    "json": "\"AccountDataSizeChanged\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "AccountNotExecutable",
+    "display": "instruction expected an executable account",
+    "bincode": "15000000",
+    "json": "\"AccountNotExecutable\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "AccountBorrowFailed",
+    "display": "instruction tries to borrow reference for an account which is already borrowed",
+    "bincode": "16000000",
+    "json": "\"AccountBorrowFailed\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "AccountBorrowOutstanding",
+    "display": "instruction left account with an outstanding borrowed reference",
+    "bincode": "17000000",
+    "json": "\"AccountBorrowOutstanding\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "DuplicateAccountOutOfSync",
+    "display": "instruction modifications of multiply-passed account differ",
+    "bincode": "18000000",
+    "json": "\"DuplicateAccountOutOfSync\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "Custom(0)",
+    "display": "custom program error: 0x0",
+    "bincode": "1900000000000000",
+    "json": "{\"Custom\":0}"
+  },
+  {
+    "kind": "instruction",
+    "debug": "Custom(42)",
+    "display": "custom program error: 0x2a",
+    "bincode": "190000002a000000",
+    "json": "{\"Custom\":42}"
+  },
+  {
+    "kind": "instruction",
+    "debug": "Custom(3735928559)",
+    "display": "custom program error: 0xdeadbeef",
+    "bincode": "19000000efbeadde",
+    "json": "{\"Custom\":3735928559}"
+  },
+  {
+    "kind": "instruction",
+    "debug": "InvalidError",
+    "display": "program returned invalid error code",
+    "bincode": "1a000000",
+    "json": "\"InvalidError\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ExecutableDataModified",
+    "display": "instruction changed executable accounts data",
+    "bincode": "1b000000",
+    "json": "\"ExecutableDataModified\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ExecutableLamportChange",
+    "display": "instruction changed the balance of an executable account",
+    "bincode": "1c000000",
+    "json": "\"ExecutableLamportChange\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ExecutableAccountNotRentExempt",
+    "display": "executable accounts must be rent exempt",
+    "bincode": "1d000000",
+    "json": "\"ExecutableAccountNotRentExempt\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "UnsupportedProgramId",
+    "display": "Unsupported program id",
+    "bincode": "1e000000",
+    "json": "\"UnsupportedProgramId\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "CallDepth",
+    "display": "Cross-program invocation call depth too deep",
+    "bincode": "1f000000",
+    "json": "\"CallDepth\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "MissingAccount",
+    "display": "An account required by the instruction is missing",
+    "bincode": "20000000",
+    "json": "\"MissingAccount\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ReentrancyNotAllowed",
+    "display": "Cross-program invocation reentrancy not allowed for this instruction",
+    "bincode": "21000000",
+    "json": "\"ReentrancyNotAllowed\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "MaxSeedLengthExceeded",
+    "display": "Length of the seed is too long for address generation",
+    "bincode": "22000000",
+    "json": "\"MaxSeedLengthExceeded\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "InvalidSeeds",
+    "display": "Provided seeds do not result in a valid address",
+    "bincode": "23000000",
+    "json": "\"InvalidSeeds\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "InvalidRealloc",
+    "display": "Failed to reallocate account data",
+    "bincode": "24000000",
+    "json": "\"InvalidRealloc\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ComputationalBudgetExceeded",
+    "display": "Computational budget exceeded",
+    "bincode": "25000000",
+    "json": "\"ComputationalBudgetExceeded\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "PrivilegeEscalation",
+    "display": "Cross-program invocation with unauthorized signer or writable account",
+    "bincode": "26000000",
+    "json": "\"PrivilegeEscalation\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ProgramEnvironmentSetupFailure",
+    "display": "Failed to create program execution environment",
+    "bincode": "27000000",
+    "json": "\"ProgramEnvironmentSetupFailure\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ProgramFailedToComplete",
+    "display": "Program failed to complete",
+    "bincode": "28000000",
+    "json": "\"ProgramFailedToComplete\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ProgramFailedToCompile",
+    "display": "Program failed to compile",
+    "bincode": "29000000",
+    "json": "\"ProgramFailedToCompile\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "Immutable",
+    "display": "Account is immutable",
+    "bincode": "2a000000",
+    "json": "\"Immutable\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "IncorrectAuthority",
+    "display": "Incorrect authority provided",
+    "bincode": "2b000000",
+    "json": "\"IncorrectAuthority\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "BorshIoError",
+    "display": "Failed to serialize or deserialize account data",
+    "bincode": "2c000000",
+    "json": "\"BorshIoError\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "AccountNotRentExempt",
+    "display": "An account does not have enough lamports to be rent-exempt",
+    "bincode": "2d000000",
+    "json": "\"AccountNotRentExempt\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "InvalidAccountOwner",
+    "display": "Invalid account owner",
+    "bincode": "2e000000",
+    "json": "\"InvalidAccountOwner\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "ArithmeticOverflow",
+    "display": "Program arithmetic overflowed",
+    "bincode": "2f000000",
+    "json": "\"ArithmeticOverflow\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "UnsupportedSysvar",
+    "display": "Unsupported sysvar",
+    "bincode": "30000000",
+    "json": "\"UnsupportedSysvar\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "IllegalOwner",
+    "display": "Provided owner is not allowed",
+    "bincode": "31000000",
+    "json": "\"IllegalOwner\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "MaxAccountsDataAllocationsExceeded",
+    "display": "Accounts data allocations exceeded the maximum allowed per transaction",
+    "bincode": "32000000",
+    "json": "\"MaxAccountsDataAllocationsExceeded\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "MaxAccountsExceeded",
+    "display": "Max accounts exceeded",
+    "bincode": "33000000",
+    "json": "\"MaxAccountsExceeded\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "MaxInstructionTraceLengthExceeded",
+    "display": "Max instruction trace length exceeded",
+    "bincode": "34000000",
+    "json": "\"MaxInstructionTraceLengthExceeded\""
+  },
+  {
+    "kind": "instruction",
+    "debug": "BuiltinProgramsMustConsumeComputeUnits",
+    "display": "Builtin programs must consume compute units",
+    "bincode": "35000000",
+    "json": "\"BuiltinProgramsMustConsumeComputeUnits\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "AccountInUse",
+    "display": "Account in use",
+    "bincode": "00000000",
+    "json": "\"AccountInUse\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "AccountLoadedTwice",
+    "display": "Account loaded twice",
+    "bincode": "01000000",
+    "json": "\"AccountLoadedTwice\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "AccountNotFound",
+    "display": "Attempt to debit an account but found no record of a prior credit.",
+    "bincode": "02000000",
+    "json": "\"AccountNotFound\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "ProgramAccountNotFound",
+    "display": "Attempt to load a program that does not exist",
+    "bincode": "03000000",
+    "json": "\"ProgramAccountNotFound\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "InsufficientFundsForFee",
+    "display": "Insufficient funds for fee",
+    "bincode": "04000000",
+    "json": "\"InsufficientFundsForFee\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "InvalidAccountForFee",
+    "display": "This account may not be used to pay transaction fees",
+    "bincode": "05000000",
+    "json": "\"InvalidAccountForFee\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "AlreadyProcessed",
+    "display": "This transaction has already been processed",
+    "bincode": "06000000",
+    "json": "\"AlreadyProcessed\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "BlockhashNotFound",
+    "display": "Blockhash not found",
+    "bincode": "07000000",
+    "json": "\"BlockhashNotFound\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "InstructionError(3, InvalidArgument)",
+    "display": "Error processing Instruction 3: invalid program argument",
+    "bincode": "080000000301000000",
+    "json": "{\"InstructionError\":[3,\"InvalidArgument\"]}"
+  },
+  {
+    "kind": "transaction",
+    "debug": "InstructionError(0, Custom(42))",
+    "display": "Error processing Instruction 0: custom program error: 0x2a",
+    "bincode": "0800000000190000002a000000",
+    "json": "{\"InstructionError\":[0,{\"Custom\":42}]}"
+  },
+  {
+    "kind": "transaction",
+    "debug": "InstructionError(255, Custom(3735928559))",
+    "display": "Error processing Instruction 255: custom program error: 0xdeadbeef",
+    "bincode": "08000000ff19000000efbeadde",
+    "json": "{\"InstructionError\":[255,{\"Custom\":3735928559}]}"
+  },
+  {
+    "kind": "transaction",
+    "debug": "InstructionError(1, BorshIoError)",
+    "display": "Error processing Instruction 1: Failed to serialize or deserialize account data",
+    "bincode": "08000000012c000000",
+    "json": "{\"InstructionError\":[1,\"BorshIoError\"]}"
+  },
+  {
+    "kind": "transaction",
+    "debug": "CallChainTooDeep",
+    "display": "Loader call chain is too deep",
+    "bincode": "09000000",
+    "json": "\"CallChainTooDeep\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "MissingSignatureForFee",
+    "display": "Transaction requires a fee but has no signature present",
+    "bincode": "0a000000",
+    "json": "\"MissingSignatureForFee\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "InvalidAccountIndex",
+    "display": "Transaction contains an invalid account reference",
+    "bincode": "0b000000",
+    "json": "\"InvalidAccountIndex\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "SignatureFailure",
+    "display": "Transaction did not pass signature verification",
+    "bincode": "0c000000",
+    "json": "\"SignatureFailure\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "InvalidProgramForExecution",
+    "display": "This program may not be used for executing instructions",
+    "bincode": "0d000000",
+    "json": "\"InvalidProgramForExecution\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "SanitizeFailure",
+    "display": "Transaction failed to sanitize accounts offsets correctly",
+    "bincode": "0e000000",
+    "json": "\"SanitizeFailure\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "ClusterMaintenance",
+    "display": "Transactions are currently disabled due to cluster maintenance",
+    "bincode": "0f000000",
+    "json": "\"ClusterMaintenance\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "AccountBorrowOutstanding",
+    "display": "Transaction processing left an account with an outstanding borrowed reference",
+    "bincode": "10000000",
+    "json": "\"AccountBorrowOutstanding\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "WouldExceedMaxBlockCostLimit",
+    "display": "Transaction would exceed max Block Cost Limit",
+    "bincode": "11000000",
+    "json": "\"WouldExceedMaxBlockCostLimit\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "UnsupportedVersion",
+    "display": "Transaction version is unsupported",
+    "bincode": "12000000",
+    "json": "\"UnsupportedVersion\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "InvalidWritableAccount",
+    "display": "Transaction loads a writable account that cannot be written",
+    "bincode": "13000000",
+    "json": "\"InvalidWritableAccount\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "WouldExceedMaxAccountCostLimit",
+    "display": "Transaction would exceed max account limit within the block",
+    "bincode": "14000000",
+    "json": "\"WouldExceedMaxAccountCostLimit\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "WouldExceedAccountDataBlockLimit",
+    "display": "Transaction would exceed account data limit within the block",
+    "bincode": "15000000",
+    "json": "\"WouldExceedAccountDataBlockLimit\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "TooManyAccountLocks",
+    "display": "Transaction locked too many accounts",
+    "bincode": "16000000",
+    "json": "\"TooManyAccountLocks\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "AddressLookupTableNotFound",
+    "display": "Transaction loads an address table account that doesn't exist",
+    "bincode": "17000000",
+    "json": "\"AddressLookupTableNotFound\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "InvalidAddressLookupTableOwner",
+    "display": "Transaction loads an address table account with an invalid owner",
+    "bincode": "18000000",
+    "json": "\"InvalidAddressLookupTableOwner\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "InvalidAddressLookupTableData",
+    "display": "Transaction loads an address table account with invalid data",
+    "bincode": "19000000",
+    "json": "\"InvalidAddressLookupTableData\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "InvalidAddressLookupTableIndex",
+    "display": "Transaction address table lookup uses an invalid index",
+    "bincode": "1a000000",
+    "json": "\"InvalidAddressLookupTableIndex\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "InvalidRentPayingAccount",
+    "display": "Transaction leaves an account with a lower balance than rent-exempt minimum",
+    "bincode": "1b000000",
+    "json": "\"InvalidRentPayingAccount\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "WouldExceedMaxVoteCostLimit",
+    "display": "Transaction would exceed max Vote Cost Limit",
+    "bincode": "1c000000",
+    "json": "\"WouldExceedMaxVoteCostLimit\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "WouldExceedAccountDataTotalLimit",
+    "display": "Transaction would exceed total account data limit",
+    "bincode": "1d000000",
+    "json": "\"WouldExceedAccountDataTotalLimit\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "DuplicateInstruction(7)",
+    "display": "Transaction contains a duplicate instruction (7) that is not allowed",
+    "bincode": "1e00000007",
+    "json": "{\"DuplicateInstruction\":7}"
+  },
+  {
+    "kind": "transaction",
+    "debug": "InsufficientFundsForRent { account_index: 9 }",
+    "display": "Transaction results in an account (9) with insufficient funds for rent",
+    "bincode": "1f00000009",
+    "json": "{\"InsufficientFundsForRent\":{\"account_index\":9}}"
+  },
+  {
+    "kind": "transaction",
+    "debug": "MaxLoadedAccountsDataSizeExceeded",
+    "display": "Transaction exceeded max loaded accounts data size cap",
+    "bincode": "20000000",
+    "json": "\"MaxLoadedAccountsDataSizeExceeded\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "InvalidLoadedAccountsDataSizeLimit",
+    "display": "LoadedAccountsDataSizeLimit set for transaction must be greater than 0.",
+    "bincode": "21000000",
+    "json": "\"InvalidLoadedAccountsDataSizeLimit\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "ResanitizationNeeded",
+    "display": "ResanitizationNeeded",
+    "bincode": "22000000",
+    "json": "\"ResanitizationNeeded\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "ProgramExecutionTemporarilyRestricted { account_index: 2 }",
+    "display": "Execution of the program referenced by account at index 2 is temporarily restricted.",
+    "bincode": "2300000002",
+    "json": "{\"ProgramExecutionTemporarilyRestricted\":{\"account_index\":2}}"
+  },
+  {
+    "kind": "transaction",
+    "debug": "UnbalancedTransaction",
+    "display": "Sum of account balances before and after transaction do not match",
+    "bincode": "24000000",
+    "json": "\"UnbalancedTransaction\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "ProgramCacheHitMaxLimit",
+    "display": "Program cache hit max limit",
+    "bincode": "25000000",
+    "json": "\"ProgramCacheHitMaxLimit\""
+  },
+  {
+    "kind": "transaction",
+    "debug": "CommitCancelled",
+    "display": "CommitCancelled",
+    "bincode": "26000000",
+    "json": "\"CommitCancelled\""
+  }
+]
